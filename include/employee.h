@@ -1,8 +1,7 @@
+#pragma once
 //
 // Created by Nikita Kasinski
 //
-
-#pragma once
 
 struct Employee
 {
