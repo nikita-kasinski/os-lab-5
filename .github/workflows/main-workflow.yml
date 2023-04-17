@@ -1,0 +1,8 @@
+name: main-workflow
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: make build
