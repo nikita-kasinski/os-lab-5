@@ -1,3 +1,7 @@
+//
+// Created by Nikita Kasinski
+//
+
 #include "utility.h"
 
 void Utility::initBinaryFile(const std::string& binaryFileName, const Employee* employees, const size_t& size)
