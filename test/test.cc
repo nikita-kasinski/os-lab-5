@@ -186,3 +186,125 @@ TEST(Controller_Controller, TestEqualIds)
     Controller ctrl(binaryFileName, employees, size, ok);
     EXPECT_FALSE(ok);
 }
+
+TEST(Controller_getRecord, TestExistingId)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee secondEmployee = {2, "petya", 5.2};
+    Employee thirdEmployee = {3, "kostya", 7};
+    Employee forthEmployee = {4, "vitya", 10};
+    Employee fifthEmployee = {5, "sasha", 12};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+    Employee employeeRead;
+    EXPECT_TRUE(ctrl.getRecord(1, employeeRead));
+    EXPECT_EQ(employeeRead, firstEmployee);
+    EXPECT_TRUE(ctrl.getRecord(3, employeeRead));
+    EXPECT_EQ(employeeRead, thirdEmployee);
+}
+
+TEST(Controller_getRecord, TestFictitiousId)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee secondEmployee = {2, "petya", 5.2};
+    Employee thirdEmployee = {3, "kostya", 7};
+    Employee forthEmployee = {4, "vitya", 10};
+    Employee fifthEmployee = {5, "sasha", 12};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+    Employee employeeRead;
+    EXPECT_FALSE(ctrl.getRecord(7, employeeRead));
+}
+
+
+TEST(Controller_writeRecord, FictitiousId)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee secondEmployee = {2, "petya", 5.2};
+    Employee thirdEmployee = {3, "kostya", 7};
+    Employee forthEmployee = {4, "vitya", 10};
+    Employee fifthEmployee = {5, "sasha", 12};
+    Employee newEmployee = {3, "ilya", 20};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+
+    EXPECT_FALSE(ctrl.setRecord(7, newEmployee));
+}
+
+TEST(Controller_writeRecord, SameIdOverwrite)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee secondEmployee = {2, "petya", 5.2};
+    Employee thirdEmployee = {3, "kostya", 7};
+    Employee forthEmployee = {4, "vitya", 10};
+    Employee fifthEmployee = {5, "sasha", 12};
+    Employee newEmployee = {3, "ilya", 20};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+    Employee employeeRead;
+
+    EXPECT_TRUE(ctrl.getRecord(3, employeeRead));
+    EXPECT_EQ(thirdEmployee, employeeRead);
+
+    EXPECT_TRUE(ctrl.setRecord(3, newEmployee));
+    EXPECT_TRUE(ctrl.getRecord(3, employeeRead));
+    EXPECT_EQ(newEmployee, employeeRead);
+}
+
+TEST(Controller_writeRecord, NewIdWrite)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee secondEmployee = {2, "petya", 5.2};
+    Employee thirdEmployee = {3, "kostya", 7};
+    Employee forthEmployee = {4, "vitya", 10};
+    Employee fifthEmployee = {5, "sasha", 12};
+    Employee newEmployee = {7, "ilya", 20};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+    Employee employeeRead;
+
+    EXPECT_TRUE(ctrl.setRecord(4, newEmployee));
+    EXPECT_FALSE(ctrl.getRecord(4, employeeRead));
+
+    EXPECT_TRUE(ctrl.getRecord(7, employeeRead));
+    EXPECT_EQ(newEmployee, employeeRead);
+}
+
+TEST(Controller_writeRecord, NewIdIsTaken)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee secondEmployee = {2, "petya", 5.2};
+    Employee thirdEmployee = {3, "kostya", 7};
+    Employee forthEmployee = {4, "vitya", 10};
+    Employee fifthEmployee = {5, "sasha", 12};
+    Employee newEmployee = {2, "ilya", 20};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+    Employee employeeRead;
+
+    EXPECT_FALSE(ctrl.setRecord(4, newEmployee));
+}
