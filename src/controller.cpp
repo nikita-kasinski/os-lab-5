@@ -29,5 +29,15 @@ Controller::Controller(
 
 bool Controller::getRecord(const std::size_t& id, Employee& employee) const
 {
+    try
+    {
+        std::size_t recordId = idToRecordId.at(id);
+        employee = model.readRecord(recordId);
+        return true;
+    }
+    catch(const std::exception& e)
+    {
+        return false;
+    }
     
 }
