@@ -16,7 +16,7 @@ private:
     static constexpr size_t idWidth = 5;
     static constexpr size_t nameWidth = 15;
     static constexpr size_t hoursWidth = 5;
-    
+
 public:
     // checks if the array has equal elements
     static bool hasEquals(const int *array, const std::size_t &size);
@@ -32,4 +32,11 @@ public:
 
     // prints employee to out
     static void printEmployee(std::ostream& out, const Employee& employee);
+
+    // safely inputs size_t value from in, puts input prompts into out
+    static size_t safeUnsignedIntegerInput(
+        std::istream &in, 
+        std::ostream &out, 
+        const std::string &inputPrompt, 
+        const std::string &inputFailedPrompt);
 };
