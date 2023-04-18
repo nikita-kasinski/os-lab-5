@@ -25,5 +25,6 @@ public:
     
 
     // checks if the array has equal elements
-    bool hasEquals(const size_t* array, const size_t& size) const
+    bool hasEquals(const size_t* array, const size_t& size) const;
+    
 };
