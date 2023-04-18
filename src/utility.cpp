@@ -3,6 +3,7 @@
 //
 
 #include "utility.h"
+#include <set>
 
 Utility::Utility(const std::string& binaryFileName, const Employee* employees, const size_t& size)
 {
@@ -15,8 +16,18 @@ Utility::Utility(const std::string& binaryFileName, const Employee* employees, c
     }
 }
 
-bool Utility::getRecord(std::istream& f, const size_t& id, Employee& employee)
+bool Utility::getRecord(std::istream& f, const size_t& id, Employee& employee) const
 {
-    size_t numberOfRecords = Utility::getNumberOfRecords();
-    size_t maxId = numberOfRecords - 1; // -1 as id are in range 
+    //size_t numberOfRecords = Utility::getNumberOfRecords();
+    //size_t maxId = numberOfRecords - 1; // -1 as id are in range 
+}
+
+bool Utility::hasEquals(const int* array, const size_t& size) const
+{
+    std::set<int> distinctElements;
+    for (size_t i = 0; i < size; ++i)
+    {
+        distinctElements.insert(array[i]);
+    }
+    return (distinctElements.size() == size);
 }
