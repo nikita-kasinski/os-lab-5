@@ -18,16 +18,14 @@ Controller::Controller(
     if (hasEq)
     {
         ok = false; // as array has equal ids we exit process
+        return;
     }
-    else
-    {
-        ok = true;
-        Utility::fillMap(idToRecordId, employees, size);
-        model.writeBinaryFile(employees, size);
-    }
+    ok = true;
+    Utility::fillMap(idToRecordId, employees, size);
+    model.writeBinaryFile(employees, size);
 }
 
-bool Controller::getRecord(const std::size_t& id, Employee& employee) const
+bool Controller::getRecord(const std::size_t &id, Employee &employee) const
 {
     try
     {
@@ -35,9 +33,8 @@ bool Controller::getRecord(const std::size_t& id, Employee& employee) const
         employee = model.readRecord(recordId);
         return true;
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         return false;
     }
-    
 }
