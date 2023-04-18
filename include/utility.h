@@ -13,7 +13,10 @@ class Utility
 {
 private:
     static constexpr auto maxStreamSize = std::numeric_limits<std::streamsize>::max();
-
+    static constexpr size_t idWidth = 5;
+    static constexpr size_t nameWidth = 15;
+    static constexpr size_t hoursWidth = 5;
+    
 public:
     // checks if the array has equal elements
     static bool hasEquals(const int *array, const std::size_t &size);
