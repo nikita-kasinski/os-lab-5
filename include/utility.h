@@ -23,4 +23,7 @@ public:
     // gets record by given id and puts it into employee, return false in case there is no employee under such id
     bool getRecord(std::istream& f, const size_t& id, Employee& employee);
     
+
+    // checks if the array has equal elements
+    bool hasEquals(const size_t& id, const size_t& size);
 };
