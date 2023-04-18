@@ -17,13 +17,8 @@ Utility::Utility(const std::string &binaryFileName, const Employee *employees, c
     else
     {
         ok = true;
-    }
-    std::fstream fout(binaryFileName.c_str(), std::ios::binary | std::ios::out);
-    fout.seekp(0);
-    fout.write(reinterpret_cast<const char *>(&size), sizeof(size_t));
-    for (size_t i = 0; i < size; ++i)
-    {
-        fout.write(reinterpret_cast<const char *>(employees), sizeof(employees));
+        fillMap(employees, size);
+        writeBinaryFile(binaryFileName, employees, size);
     }
 }
 
@@ -59,5 +54,15 @@ void Utility::fillMap(const Employee* employees, const size_t& size)
     for (size_t i = 0; i < size; ++i)
     {
         idToRecordId[employees[i].id] = i;
+    }
+}
+
+void Utility::writeBinaryFile(const std::string& binaryFileName, const Employee* employees, const size_t& size) const
+{
+    std::fstream fout(binaryFileName.c_str(), std::ios::binary | std::ios::out);
+    fout.seekp(0);
+    for (size_t i = 0; i < size; ++i)
+    {
+        fout.write(reinterpret_cast<const char *>(employees), sizeof(employees));
     }
 }
