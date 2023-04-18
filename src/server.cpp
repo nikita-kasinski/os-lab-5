@@ -26,7 +26,16 @@ int main()
     std::string binaryFileName;
     std::cin >> binaryFileName;
 
-    
+    // creating controller for binary file
+    bool ok = false;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    if (!ok)
+    {
+        std::cerr << "Employees array has equal ids. Quit\n";
+        return 1;
+    }
+
+
     // freeing memory
     delete[] employees;
     return 0;
