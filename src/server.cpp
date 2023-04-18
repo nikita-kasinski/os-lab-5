@@ -24,6 +24,7 @@ int main()
 
     // retrieving binary file name
     std::string binaryFileName;
+    std::cout << "Enter binary file name: ";
     std::cin >> binaryFileName;
 
     // creating controller for binary file
@@ -42,7 +43,7 @@ int main()
         Utility::printEmployees(std::cout, employeesFromFile, employeesFromFileSize);
         delete[] employeesFromFile;
     }
-    
+
     // retrieving number of clients
     size_t numberOfClients = Utility::safeUnsignedIntegerInput(
         std::cin,
