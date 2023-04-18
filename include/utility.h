@@ -39,4 +39,7 @@ public:
         std::ostream &out, 
         const std::string &inputPrompt, 
         const std::string &inputFailedPrompt);
+
+    // outputs employee array into out
+    static void printEmployees(std::ostream& out, const Employee* employees, const size_t& size);
 };

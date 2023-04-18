@@ -80,3 +80,19 @@ size_t Utility::safeUnsignedIntegerInput(std::istream &in, std::ostream &out, co
     }
     return static_cast<size_t>(tempAns);
 }
+
+void Utility::printEmployees(std::ostream& out, const Employee* array, const size_t &size)
+{
+    // print header
+    out
+        << std::setw(Utility::idWidth) << "id"
+        << std::setw(Utility::nameWidth) << "name"
+        << std::setw(Utility::hoursWidth) << "hours"
+        << "\n";
+
+    // print employees
+    for (size_t i = 0; i < size; ++i)
+    {
+        printEmployee(out, array[i]);
+    }
+}
