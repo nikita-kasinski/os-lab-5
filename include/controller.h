@@ -25,4 +25,7 @@ public:
 
     // sets record by oldId to employee, returns false in case there is no employee under oldId or newId(employee.id) is taken
     bool setRecord(const int &oldId, const Employee &employee);
+
+    // get all records from a file. Array size is put into size. Array must be freed
+    Employee* getAllRecords(size_t& size) const;
 };

@@ -65,3 +65,18 @@ bool Controller::setRecord(const int& oldId, const Employee &employee)
         return false;
     }
 }
+
+Employee* Controller::getAllRecords(size_t& size) const
+{
+    size = idToRecordId.size();
+    Employee *array = new Employee[size];
+
+    size_t i = 0;
+    for (const auto& key_value : idToRecordId)
+    {
+        Controller::getRecord(key_value.first, array[i]);
+        ++i;
+    }
+    
+    return array;
+}
