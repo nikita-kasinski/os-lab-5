@@ -304,7 +304,41 @@ TEST(Controller_writeRecord, NewIdIsTaken)
     bool ok;
     Controller ctrl(binaryFileName, employees, size, ok);
     EXPECT_TRUE(ok);
-    Employee employeeRead;
 
     EXPECT_FALSE(ctrl.setRecord(4, newEmployee));
+}
+
+TEST(TestSafeUnsignedIntegerInput, TestStandardInput)
+{
+    std::istringstream testStream("1 2 3 4\n");
+    std::ostringstream ostream;
+    size_t a, b, c, d;
+    a = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
+    b = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
+    c = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
+    d = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
+    EXPECT_EQ(a, 1);
+    EXPECT_EQ(b, 2);
+    EXPECT_EQ(c, 3);
+    EXPECT_EQ(d, 4);
+}
+
+TEST(TestSafeUnsignedIntegerInput, TestFailedInput)
+{
+    std::istringstream testStream("asdfbsda1\n2 sadgsadg123gasd\n 3\n");
+    std::ostringstream ostream;
+    size_t a, b;
+    a = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
+    b = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
+    EXPECT_EQ(a, 2);
+    EXPECT_EQ(b, 3);
+}
+
+TEST(TestSafeUnsignedIntegerInput, TestNegativeInput)
+{
+    std::istringstream testStream("skldghuhasdkjgn\n -1 \n2\n");
+    std::ostringstream ostream;
+    size_t a;
+    a = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
+    EXPECT_EQ(a, 2);
 }
