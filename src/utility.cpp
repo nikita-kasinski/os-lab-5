@@ -1,5 +1,3 @@
-#include "utility.h"
-
 //
 // Created by Nikita Kasinski
 //
