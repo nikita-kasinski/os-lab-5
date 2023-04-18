@@ -8,7 +8,7 @@
 Controller::Controller(
     const std::string &binaryFileName,
     const Employee *employees,
-    const size_t &size,
+    const std::size_t &size,
     bool &ok)
     : model(binaryFileName)
 {
@@ -17,7 +17,7 @@ Controller::Controller(
     delete[] ids;
     if (hasEq)
     {
-        ok = false; // as array has equal ids correct we exit process
+        ok = false; // as array has equal ids we exit process
     }
     else
     {
@@ -25,4 +25,9 @@ Controller::Controller(
         model.fillMap(employees, size);
         model.writeBinaryFile(employees, size);
     }
+}
+
+bool Controller::getRecord(const std::size_t& id, Employee& employee) const
+{
+    
 }

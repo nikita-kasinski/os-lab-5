@@ -14,11 +14,12 @@ class Controller
 {
 private:
     Model model;
-
+    std::map<int, std::size_t> idToRecordId;
+    
 public:
     // contructs utility object to manage binary file filled with given array of employees
-    Controller(const std::string &binaryFileName, const Employee *employees, const size_t &size, bool &ok);
+    Controller(const std::string &binaryFileName, const Employee *employees, const std::size_t &size, bool &ok);
 
-    // gets record by given id and puts it into employee, return false in case there is no employee under such id
-    bool getRecord(std::istream &f, const size_t &id, Employee &employee) const;
+    // gets record by given id and puts it into employee variable, return false in case there is no employee under such id
+    bool getRecord(const std::size_t &id, Employee &employee) const;
 };

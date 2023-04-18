@@ -5,6 +5,7 @@
 
 #include <limits>
 #include <fstream>
+#include <string>
 #include <map>
 #include "employee.h"
 
@@ -15,8 +16,11 @@ private:
 
 public:
     // checks if the array has equal elements
-    static bool hasEquals(const int *array, const size_t &size);
+    static bool hasEquals(const int *array, const std::size_t &size);
 
     // creates array of ids of given employees, returned array must be freed
-    static int *extractIds(const Employee *employees, const size_t &size);
+    static int *extractIds(const Employee *employees, const std::size_t &size);
+
+    // maps Employee.id -> position in the binary file in mapToFill 
+    static void fillMap(std::map<int, std::size_t> &mapToFill, const Employee *employess, const std::size_t &size);
 };
