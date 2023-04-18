@@ -136,3 +136,23 @@ TEST(TestUtilityExtractIds, SeveralElems)
     }
     delete[] ids;
 }
+
+TEST(TestUtilityFillMap, TestStandartFlow)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {5, "vasya", 4.8};
+    Employee secondEmployee = {1, "petya", 5.2};
+    Employee thirdEmployee = {3, "kostya", 7};
+    Employee forthEmployee = {2, "vitya", 10};
+    Employee fifthEmployee = {4, "sasha", 12};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    std::map<int, size_t> expectedAnswer;
+    expectedAnswer[5] = 0;
+    expectedAnswer[1] = 1;
+    expectedAnswer[3] = 2;
+    expectedAnswer[2] = 3;
+    expectedAnswer[4] = 4;
+    std::map<int, size_t> filledMap;
+    Utility::fillMap(filledMap, employees, size);
+    EXPECT_EQ(expectedAnswer, filledMap);
+}
