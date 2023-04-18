@@ -23,4 +23,10 @@ public:
 
     // maps Employee.id -> position in the binary file in mapToFill 
     static void fillMap(std::map<int, std::size_t> &mapToFill, const Employee *employess, const std::size_t &size);
+
+    // reads employee from in, puts input prompts into out
+    static Employee readEmployee(std::istream& in, std::ostream& out);
+
+    // prints employee to out
+    static void printEmployee(std::ostream& out, const Employee& employee);
 };
