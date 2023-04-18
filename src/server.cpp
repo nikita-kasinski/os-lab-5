@@ -3,8 +3,38 @@
 //
 
 #include <iostream>
+#include <windows.h>
+#include <sstream>
 #include "utility.h"
 #include "controller.h"
+
+
+BOOL StartClient(size_t id)
+{
+    STARTUPINFOA si;
+    ZeroMemory(&si, sizeof(STARTUPINFOA));
+    si.cb = sizeof(STARTUPINFOA);
+
+    PROCESS_INFORMATION pi;
+
+    std::ostringstream consoleCommand;
+    std::string client = "client.exe";
+    consoleCommand << client;
+    BOOL result = CreateProcessA(
+        NULL, 
+        const_cast<char*>(consoleCommand.str().c_str()), 
+        NULL,
+        NULL, 
+        FALSE, 
+        CREATE_NEW_CONSOLE, 
+        NULL, 
+        NULL, 
+        &si, 
+        &pi);
+    CloseHandle(pi.hThread);
+    CloseHandle(pi.hProcess);
+    return result;
+}
 
 int main()
 {
