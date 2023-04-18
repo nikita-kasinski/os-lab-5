@@ -25,6 +25,9 @@ public:
     // fills idToRecordId map. Employee.id -> position in the binary file
     void fillMap(const Employee *employees, const size_t &size);
 
-    // fills binaryfile binaryFileName with records of employess
+    // fills binary file binaryFileName with records of employess
     void writeBinaryFile(const Employee *employees, const size_t &size) const;
+
+    // retrieves record by employee id, returns false if such employee doesn't exist
+    bool getRecord(const size_t &id, Employee &employee) const;
 };
