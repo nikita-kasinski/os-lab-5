@@ -9,15 +9,15 @@
 int main()
 {
     // retrieving number of employees
-    size_t size = Utility::safeUnsignedIntegerInput(
+    size_t employeesSize = Utility::safeUnsignedIntegerInput(
         std::cin,
         std::cout, 
         "Enter number of employees: ",
         "Value must be positive integer\n");
 
     // retrieving employees
-    Employee *employees = new Employee[size];
-    for (size_t i = 0; i < size; ++i)
+    Employee *employees = new Employee[employeesSize];
+    for (size_t i = 0; i < employeesSize; ++i)
     {
         employees[i] = Utility::readEmployee(std::cin, std::cout);
     }
@@ -28,12 +28,19 @@ int main()
 
     // creating controller for binary file
     bool ok = false;
-    Controller ctrl(binaryFileName, employees, size, ok);
+    Controller ctrl(binaryFileName, employees, employeesSize, ok);
     if (!ok)
     {
         std::cerr << "Employees array has equal ids. Quit\n";
         return 1;
     }
+
+    // retrieving number of clients
+    size_t numberOfClients = Utility::safeUnsignedIntegerInput(
+        std::cin,
+        std::cout,
+        "Enter number of clients: ",
+        "Value must be positive integer\n");
 
 
     // freeing memory
