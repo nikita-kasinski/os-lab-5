@@ -3,3 +3,4 @@ obj/*
 cov/*
 .vscode/*
 testbinary
+binary
