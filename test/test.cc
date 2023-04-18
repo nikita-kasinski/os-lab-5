@@ -156,3 +156,33 @@ TEST(TestUtilityFillMap, TestStandartFlow)
     Utility::fillMap(filledMap, employees, size);
     EXPECT_EQ(expectedAnswer, filledMap);
 }
+
+TEST(Controller_Controller, TestDistinctIds)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee secondEmployee = {2, "petya", 5.2};
+    Employee thirdEmployee = {3, "kostya", 7};
+    Employee forthEmployee = {4, "vitya", 10};
+    Employee fifthEmployee = {5, "sasha", 12};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+}
+
+TEST(Controller_Controller, TestEqualIds)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee secondEmployee = {2, "petya", 5.2};
+    Employee thirdEmployee = {1, "kostya", 7};
+    Employee forthEmployee = {4, "vitya", 10};
+    Employee fifthEmployee = {5, "sasha", 12};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_FALSE(ok);
+}
