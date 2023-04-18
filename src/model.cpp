@@ -15,7 +15,7 @@ void Model::writeBinaryFile(const Employee *employees, const std::size_t &size) 
     fout.seekp(0);
     for (std::size_t i = 0; i < size; ++i)
     {
-        fout.write(reinterpret_cast<const char *>(employees), sizeof(employees));
+        fout.write(reinterpret_cast<const char *>(&employees[i]), sizeof(Employee));
     }
 }
 
