@@ -38,13 +38,13 @@ BOOL StartClient()
 DWORD WINAPI InteractWithClientThread(LPVOID args)
 {
     const std::string pipeName = R"(\\.\pipe\os-lab5-pipe)";
-    size_t numberOfClients = *(size_t*)args;
+    size_t numberOfClients = *(size_t *)args;
 
     // creating named pipe
     HANDLE pipe = CreateNamedPipeA(
         pipeName.c_str(),
         PIPE_ACCESS_DUPLEX,
-        PIPE_TYPE_MESSAGE | PIPE_WAIT,
+        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
         numberOfClients,
         0,
         0,
@@ -58,7 +58,44 @@ DWORD WINAPI InteractWithClientThread(LPVOID args)
         return 2;
     }
 
+    if (!ConnectNamedPipe(pipe, NULL))
+    {
+        CloseHandle(pipe);
+        std::cerr << "Connection error: " << GetLastError() << "\n";
+        return 3;
+    }
 
+    while (true)
+    {
+        DWORD bytesRead;
+        char request;
+        std::cout << "Thread is working\n";
+        ReadFile(pipe, &request, sizeof(char), &bytesRead, NULL);
+
+        // 0 is quit
+        // 1 is read record
+        // 2 is modify record
+
+        if (request == 0)
+        {
+            break;
+        }
+        else if (request == 1)
+        {
+            // reading record
+        }
+        else if (request == 2)
+        {
+            // modifying record
+        }
+        else 
+        {
+            std::cerr << "Protocol violation\n";
+        }
+    }
+
+    std::cout << "Thread ended\n";
+    CloseHandle(pipe);
 }
 
 int main()
@@ -106,20 +143,20 @@ int main()
         "Enter number of clients: ",
         "Value must be positive integer\n");
 
+    HANDLE *threads = new HANDLE[numberOfClients];
+    for (size_t i = 0; i < numberOfClients; ++i)
+    {
+        DWORD thread_id;
+        threads[i] = CreateThread(NULL, 0, InteractWithClientThread, (LPVOID *)(&numberOfClients), NULL, &thread_id);
+    }
+
     // starting clients
     for (size_t i = 0; i < numberOfClients; ++i)
     {
         StartClient();
     }
 
-    HANDLE *threads = new HANDLE[numberOfClients];
-    for (size_t i = 0; i < numberOfClients; ++i)
-    {
-        DWORD thread_id;
-        threads[i] = CreateThread(NULL, 0, InteractWithClientThread, (LPVOID*)(&numberOfClients), NULL, &thread_id);
-    }
-
-    // waiting for all threads to exit
+    // waiting for all threads to exit. It is better to change INFINITE to some constant like 10 minutes
     WaitForMultipleObjects(numberOfClients, threads, TRUE, INFINITE);
 
     // freeing memory
