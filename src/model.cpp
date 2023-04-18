@@ -25,4 +25,5 @@ Employee Model::readRecord(const std::size_t &recordId) const
     Employee employee;
     f.seekg(singleOffset * recordId);
     f.read(reinterpret_cast<char *>(&employee), sizeof(Employee));
+    return employee;
 }
