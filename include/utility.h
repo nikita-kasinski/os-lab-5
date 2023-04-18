@@ -30,5 +30,5 @@ public:
     int *extractIds(const Employee *employees, const size_t &size) const;
 
     // fills idToRecordId map. Employee.id -> position in the binary file
-    void fillMap(const Employee *employees, const size_t &size) const;
+    void fillMap(const Employee *employees, const size_t &size);
 };
