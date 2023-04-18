@@ -108,3 +108,31 @@ TEST(TestUtilityHasEquals, AllEquals)
     int array[size] = {1, 1, 1, 1, 1};
     EXPECT_TRUE(Utility::hasEquals(array, size));
 }
+
+TEST(TestUtilityExtractIds, oneElem)
+{
+    constexpr std::size_t size = 1;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee employees[size] = {firstEmployee};
+    int *ids = Utility::extractIds(employees, size);
+    for (size_t i = 0; i < size; ++i)
+    {
+        EXPECT_EQ(ids[i], employees[i].id);
+    }
+}
+TEST(TestUtilityExtractIds, SeveralElems)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {1, "vasya", 4.8};
+    Employee secondEmployee = {2, "petya", 5.2};
+    Employee thirdEmployee = {3, "kostya", 7};
+    Employee forthEmployee = {4, "vitya", 10};
+    Employee fifthEmployee = {5, "sasha", 12};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    int *ids = Utility::extractIds(employees, size);
+    for (size_t i = 0; i < size; ++i)
+    {
+        EXPECT_EQ(ids[i], employees[i].id);
+    }
+    delete[] ids;
+}
