@@ -12,7 +12,7 @@ bool Utility::hasEquals(const int *array, const std::size_t &size)
     {
         distinctElements.insert(array[i]);
     }
-    return (distinctElements.size() == size);
+    return (distinctElements.size() != size);
 }
 
 int *Utility::extractIds(const Employee *employees, const std::size_t &size)
