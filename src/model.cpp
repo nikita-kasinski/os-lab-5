@@ -27,3 +27,10 @@ Employee Model::readRecord(const std::size_t &recordId) const
     f.read(reinterpret_cast<char *>(&employee), sizeof(Employee));
     return employee;
 }
+
+void Model::writeRecord(const std::size_t &recordId, const Employee &newRecord) const
+{
+    std::fstream f(binaryFileName.c_str(), std::ios::binary | std::ios::in | std::ios::out);
+    f.seekp(0);
+    f.write(reinterpret_cast<const char*>(&newRecord), sizeof(Employee));
+}
