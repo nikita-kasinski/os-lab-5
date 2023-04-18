@@ -31,6 +31,6 @@ Employee Model::readRecord(const std::size_t &recordId) const
 void Model::writeRecord(const std::size_t &recordId, const Employee &newRecord) const
 {
     std::fstream f(binaryFileName.c_str(), std::ios::binary | std::ios::in | std::ios::out);
-    f.seekp(0);
+    f.seekp(recordId * singleOffset);
     f.write(reinterpret_cast<const char*>(&newRecord), sizeof(Employee));
 }
