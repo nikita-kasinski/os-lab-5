@@ -4,7 +4,7 @@
 
 #include "utility.h"
 
-void Utility::initBinaryFile(const std::string& binaryFileName, const Employee* employees, const size_t& size)
+Utility::Utility(const std::string& binaryFileName, const Employee* employees, const size_t& size)
 {
     std::fstream fout(binaryFileName.c_str(), std::ios::binary | std::ios::out);
     fout.seekp(0);
@@ -13,4 +13,10 @@ void Utility::initBinaryFile(const std::string& binaryFileName, const Employee* 
     {
         fout.write(reinterpret_cast<const char*>(employees), sizeof(employees));
     }
+}
+
+bool Utility::getRecord(std::istream& f, const size_t& id, Employee& employee)
+{
+    size_t numberOfRecords = Utility::getNumberOfRecords();
+    size_t maxId = numberOfRecords - 1; // -1 as id are in range 
 }
