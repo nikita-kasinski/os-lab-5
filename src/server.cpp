@@ -11,7 +11,7 @@ int main()
     // retrieving number of employees
     size_t employeesSize = Utility::safeUnsignedIntegerInput(
         std::cin,
-        std::cout, 
+        std::cout,
         "Enter number of employees: ",
         "Value must be positive integer\n");
 
@@ -35,13 +35,20 @@ int main()
         return 1;
     }
 
+    // printing binary file
+    {
+        size_t employeesFromFileSize;
+        Employee *employeesFromFile = ctrl.getAllRecords(employeesFromFileSize);
+        Utility::printEmployees(std::cout, employeesFromFile, employeesFromFileSize);
+        delete[] employeesFromFile;
+    }
+    
     // retrieving number of clients
     size_t numberOfClients = Utility::safeUnsignedIntegerInput(
         std::cin,
         std::cout,
         "Enter number of clients: ",
         "Value must be positive integer\n");
-
 
     // freeing memory
     delete[] employees;
