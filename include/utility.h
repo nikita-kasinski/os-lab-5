@@ -31,4 +31,7 @@ public:
 
     // fills idToRecordId map. Employee.id -> position in the binary file
     void fillMap(const Employee *employees, const size_t &size);
+
+    // fills binaryfile binaryFileName with records of employess
+    void writeBinaryFile(const std::string& binaryFileName, const Employee* employees, const size_t& size) const;
 };
