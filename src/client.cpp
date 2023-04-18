@@ -1,7 +1,45 @@
+//
+// Created by Nikita Kasinski
+//
+
 #include <iostream>
+#include <string>
+#include "utility.h"
 
 int main()
 {
-    std::cout << "Hello world\n";
+    std::string menu = 
+    "Enter corresponding request: \n"
+    "   0 to see menu\n"
+    "   1 to quit\n"
+    "   2 to read record\n"
+    "   3 to modify record\n";
+    std::cout << menu;
+    while(true)
+    {
+        int request = -1;
+        std::cin >> request;
+        if (request == 0)
+        {
+            std::cout << menu;
+        }
+        else if (request == 1)
+        {
+            std::cout << "Quit.\n";
+            break;
+        }
+        else if (request == 2)
+        {
+            // reading record
+        }
+        else if (request == 3)
+        {
+            // modifying record
+        }
+        else 
+        {
+            std::cout << "Unknown option. Enter 0 to see menu\n";
+        }
+    }
     return 0;
 }
