@@ -9,7 +9,7 @@
 #include "controller.h"
 
 
-BOOL StartClient(size_t id)
+BOOL StartClient()
 {
     STARTUPINFOA si;
     ZeroMemory(&si, sizeof(STARTUPINFOA));
@@ -81,7 +81,40 @@ int main()
         "Enter number of clients: ",
         "Value must be positive integer\n");
 
+    // starting clients
+    for (size_t i = 0; i < numberOfClients; ++i)
+    {
+        StartClient();
+    }
+
+    // creating named pipes
+    HANDLE *pipes = new HANDLE[numberOfClients];
+    const std::string pipeName = R"(\\.\pipe\os-lab5-pipe)";
+    for (size_t i = 0; i < numberOfClients; ++i)
+    {
+        pipes[i] = CreateNamedPipeA(
+            pipeName.c_str(), 
+            PIPE_ACCESS_DUPLEX, 
+            PIPE_TYPE_MESSAGE | PIPE_WAIT, 
+            numberOfClients,
+            0,
+            0,
+            INFINITE,
+            NULL);
+
+        if (pipes[i] == INVALID_HANDLE_VALUE)
+        {
+            std::cerr << "Cannot open pipe: " << GetLastError() << "\n";
+            return 2;
+        }
+    }
+
     // freeing memory
+    for (size_t i = 0; i < numberOfClients; ++i)
+    {
+        CloseHandle(pipes[i]);
+    }
+    delete[] pipes;
     delete[] employees;
     return 0;
 }
