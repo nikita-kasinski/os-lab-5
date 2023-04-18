@@ -3,8 +3,8 @@ EXECS = bin/server.exe
 EXECT = bin/test.exe
 objC = obj/client.o
 objS = obj/server.o
-obj = obj/utility.o obj/model.o obj/controller.o
-objT = obj/test.o obj/tutility.o
+obj = obj/utility.o obj/model.o obj/controller.o obj/employee.o
+objT = obj/test.o obj/tutility.o obj/tmodel.o obj/tcontroller.o obj/temployee.o
 CC = g++
 CPPFLAGS = -std=c++17 -Wall -Iinclude
 TESTLIB = -lgtest -lgtest_main -lgcov
@@ -27,10 +27,10 @@ report: clean_coverage test
 	-genhtml coverage.info -o cov
 	-rm coverage.info
 	start cov/index.html
-test: dirs $(TEXEC)
-	./$(TEXEC)
-$(TEXEC): $(objT)
-	$(CC) $(CPPFLAGS) $(objT) -o bin/test.exe $(TESTLIB)
+test: dirs $(EXECT)
+	./$(EXECT)
+$(EXECT): $(objT)
+	$(CC) $(CPPFLAGS) $(objT) -o $(EXECT) $(TESTLIB)
 obj/%.o: test/%.cc
 	$(CC) $(CPPFLAGS) -c $< -o $@ $(TESTLIB)
 obj/t%.o: src/%.cpp include/%.h
