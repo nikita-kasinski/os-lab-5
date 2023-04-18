@@ -12,7 +12,7 @@ class Utility
 {
 private:
     static constexpr auto maxStreamSize = std::numeric_limits<std::streamsize>::max();
-    static constexpr size_t overallOffset = sizeof(size_t);
+    static constexpr size_t overallOffset = 0; //sizeof(size_t);
     static constexpr size_t singleOffset = sizeof(Employee);
     std::map<int, size_t> idToRecordId;
 
