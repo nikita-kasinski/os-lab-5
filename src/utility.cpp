@@ -7,6 +7,7 @@
 
 Utility::Utility(const std::string& binaryFileName, const Employee* employees, const size_t& size)
 {
+    int *ids = new int[size];
     std::fstream fout(binaryFileName.c_str(), std::ios::binary | std::ios::out);
     fout.seekp(0);
     fout.write(reinterpret_cast<const char*>(&size), sizeof(size_t));
@@ -30,4 +31,14 @@ bool Utility::hasEquals(const int* array, const size_t& size) const
         distinctElements.insert(array[i]);
     }
     return (distinctElements.size() == size);
+}
+
+int* Utility::extractIds(const Employee* employees, const size_t& size) const
+{
+    int *ids = new int[size];
+    for (size_t i = 0; i < size; ++i)
+    {
+        ids[i] = employees[i].id;
+    }
+    return ids;
 }
