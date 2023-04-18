@@ -18,7 +18,7 @@ $(EXECC): $(objC) $(obj)
 	$(CC) $(CPPFLAGS) $(objC) $(obj) -o $(EXECC)
 $(EXECS): $(objS) $(obj)
 	$(CC) $(CPPFLAGS) $(objS) $(obj) -o $(EXECS)
-obj/%.o: src/%.cpp include/%.h
+obj/%.o: src/%.cpp
 	$(CC) $(CPPFLAGS) -c $< -o $@
 # test recipes
 report: clean_coverage test
