@@ -12,7 +12,7 @@ COVERAGE = -fprofile-arcs -ftest-coverage
 .PHONY = dirs run build clean test report clean_coverage
 # run and build recipes
 run: dirs $(EXECC) $(EXECS)
-	./$(EXECC)
+	./$(EXECS)
 build: dirs $(EXECC) $(EXECS)
 $(EXECC): $(objC) $(obj)
 	$(CC) $(CPPFLAGS) $(objC) $(obj) -o $(EXECC)
