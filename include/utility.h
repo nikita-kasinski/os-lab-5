@@ -27,4 +27,7 @@ public:
     // checks if the array has equal elements
     bool hasEquals(const int* array, const size_t& size) const;
 
+    // creates array of ids of given employees, returned array must be freed
+    int* extractIds(const Employee* employees, const size_t& size) const;
+
 };
