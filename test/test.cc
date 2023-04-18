@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <string>
 #include "model.h"
+#include "utility.h"
+#include "controller.h"
 
 TEST(TestModelReadRecord, TestOnlyOneRecord)
 {
@@ -70,4 +72,39 @@ TEST(TestModelWriteRecord, TestSeveralRecords)
 
     model.writeRecord(2, newThirdEmployee);
     EXPECT_EQ(newThirdEmployee, model.readRecord(2));
+}
+
+TEST(TestUtilityHasEquals, TestNoEquals)
+{
+    constexpr std::size_t size = 4;
+    int array[size] = {1, 2, 3, 4};
+    EXPECT_FALSE(Utility::hasEquals(array, size));
+}
+
+TEST(TestUtilityHasEquals, ZeroElems)
+{
+    constexpr std::size_t size = 0;
+    int *array = nullptr;
+    EXPECT_FALSE(Utility::hasEquals(array, size));
+}
+
+TEST(TestUtilityHasEquals, OneElem)
+{
+    constexpr std::size_t size = 1;
+    int array[size] = {1};
+    EXPECT_FALSE(Utility::hasEquals(array, size));
+}
+
+TEST(TestUtilityHasEquals, TwoEquals)
+{
+    constexpr std::size_t size = 5;
+    int array[size] = {1, 2, 3, 4, 1};
+    EXPECT_TRUE(Utility::hasEquals(array, size));
+}
+
+TEST(TestUtilityHasEquals, AllEquals)
+{
+    constexpr std::size_t size = 5;
+    int array[size] = {1, 1, 1, 1, 1};
+    EXPECT_TRUE(Utility::hasEquals(array, size));
 }
