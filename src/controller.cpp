@@ -25,7 +25,7 @@ Controller::Controller(
     model.writeBinaryFile(employees, size);
 }
 
-bool Controller::getRecord(const std::size_t &id, Employee &employee) const
+bool Controller::getRecord(const int &id, Employee &employee) const
 {
     try
     {
@@ -35,6 +35,33 @@ bool Controller::getRecord(const std::size_t &id, Employee &employee) const
     }
     catch (const std::exception &e)
     {
+        return false;
+    }
+}
+
+bool Controller::setRecord(const int& oldId, const Employee &employee)
+{
+    try
+    {
+        std::size_t recordId = idToRecordId.at(oldId);
+        int newId = employee.id;
+        idToRecordId.erase(oldId);
+        try
+        {
+            idToRecordId.at(newId);
+            // thereIsRecord under newId
+            return false;
+        }
+        catch (const std::exception &e)
+        {
+            idToRecordId[newId] = recordId;
+            model.writeRecord(recordId, employee);
+            return true;
+        }
+    }
+    catch (const std::exception &e)
+    {
+        // there is no record under oldId
         return false;
     }
 }
