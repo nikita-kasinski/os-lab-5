@@ -17,7 +17,7 @@ private:
     std::map<int, std::size_t> idToRecordId;
 
 public:
-    // contructs utility object to manage binary file filled with given array of employees
+    // contructs controller object to manage binary file filled with given array of employees
     Controller(const std::string &binaryFileName, const Employee *employees, const std::size_t &size, bool &ok);
 
     // gets record by given id and puts it into employee variable, returns false in case there is no employee under such id
