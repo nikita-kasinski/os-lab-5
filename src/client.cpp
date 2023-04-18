@@ -14,6 +14,8 @@ int main()
     "   1 to quit\n"
     "   2 to read record\n"
     "   3 to modify record\n";
+    std::string keyPrompt = "Input employee id to access its record: ";
+
     std::cout << menu;
     while(true)
     {
@@ -31,10 +33,18 @@ int main()
         else if (request == 2)
         {
             // reading record
+
+            int key = -1;
+            std::cout << keyPrompt;
+            std::cin >> key;
         }
         else if (request == 3)
         {
             // modifying record
+
+            int key = -1;
+            std::cout << keyPrompt;
+            std::cin >> key;
         }
         else 
         {
