@@ -46,6 +46,9 @@ int main()
         }
         else if (request == 1)
         {
+            char response = 0;
+            DWORD bytesWritten;
+            WriteFile(pipe, &response, sizeof(response), &bytesWritten, NULL);
             std::cout << "Quit.\n";
             break;
         }
