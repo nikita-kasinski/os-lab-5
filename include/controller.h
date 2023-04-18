@@ -21,8 +21,8 @@ public:
     Controller(const std::string &binaryFileName, const Employee *employees, const std::size_t &size, bool &ok);
 
     // gets record by given id and puts it into employee variable, returns false in case there is no employee under such id
-    bool getRecord(const std::size_t &id, Employee &employee) const;
+    bool getRecord(const int &id, Employee &employee) const;
 
     // sets record by oldId to employee, returns false in case there is no employee under oldId or newId(employee.id) is taken
-    bool setRecord(const std::size_t &oldId, const Employee &employee) const;
+    bool setRecord(const int &oldId, const Employee &employee);
 };
