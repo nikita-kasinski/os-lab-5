@@ -22,9 +22,6 @@ public:
     // contructs model which will operate binaryFileName file
     Model(const std::string &binaryFileName);
 
-    
-    void fillMap(const Employee *employees, const std::size_t &size);
-
     // fills binary file binaryFileName with records of employess
     void writeBinaryFile(const Employee *employees, const std::size_t &size) const;
 
