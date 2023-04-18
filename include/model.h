@@ -25,6 +25,6 @@ public:
     // fills binary file binaryFileName with records of employess
     void writeBinaryFile(const Employee *employees, const std::size_t &size) const;
 
-    // retrieves record by employee id, returns false if such employee doesn't exist
-    bool getRecord(const std::size_t &id, Employee &employee) const;
+    // retrieves record by recordId, returns false if such employee doesn't exist
+    Employee readRecord(const std::size_t &recordId) const;
 };

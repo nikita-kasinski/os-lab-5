@@ -19,6 +19,10 @@ void Model::writeBinaryFile(const Employee *employees, const std::size_t &size) 
     }
 }
 
-bool Model::getRecord(const std::size_t &id, Employee &employee) const
+Employee Model::readRecord(const std::size_t &recordId) const
 {
+    std::fstream f(binaryFileName.c_str(), std::ios::binary | std::ios::in);
+    Employee employee;
+    f.seekg(singleOffset * recordId);
+    f.read(reinterpret_cast<char *>(&employee), sizeof(Employee));
 }
