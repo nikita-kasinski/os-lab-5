@@ -22,7 +22,7 @@ Controller::Controller(
     else
     {
         ok = true;
-        model.fillMap(employees, size);
+        Utility::fillMap(idToRecordId, employees, size);
         model.writeBinaryFile(employees, size);
     }
 }
