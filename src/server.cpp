@@ -8,7 +8,6 @@
 #include "utility.h"
 #include "controller.h"
 
-
 BOOL StartClient()
 {
     STARTUPINFOA si;
@@ -21,19 +20,45 @@ BOOL StartClient()
     std::string client = "client.exe";
     consoleCommand << client;
     BOOL result = CreateProcessA(
-        NULL, 
-        const_cast<char*>(consoleCommand.str().c_str()), 
         NULL,
-        NULL, 
-        FALSE, 
-        CREATE_NEW_CONSOLE, 
-        NULL, 
-        NULL, 
-        &si, 
+        const_cast<char *>(consoleCommand.str().c_str()),
+        NULL,
+        NULL,
+        FALSE,
+        CREATE_NEW_CONSOLE,
+        NULL,
+        NULL,
+        &si,
         &pi);
     CloseHandle(pi.hThread);
     CloseHandle(pi.hProcess);
     return result;
+}
+
+DWORD WINAPI InteractWithClientThread(LPVOID args)
+{
+    const std::string pipeName = R"(\\.\pipe\os-lab5-pipe)";
+    size_t numberOfClients = *(size_t*)args;
+
+    // creating named pipe
+    HANDLE pipe = CreateNamedPipeA(
+        pipeName.c_str(),
+        PIPE_ACCESS_DUPLEX,
+        PIPE_TYPE_MESSAGE | PIPE_WAIT,
+        numberOfClients,
+        0,
+        0,
+        INFINITE,
+        NULL);
+
+    if (pipe == INVALID_HANDLE_VALUE)
+    {
+        // pipe didn't open
+        std::cerr << "Cannot open pipe: " << GetLastError() << "\n";
+        return 2;
+    }
+
+
 }
 
 int main()
@@ -87,34 +112,22 @@ int main()
         StartClient();
     }
 
-    // creating named pipes
-    HANDLE *pipes = new HANDLE[numberOfClients];
-    const std::string pipeName = R"(\\.\pipe\os-lab5-pipe)";
+    HANDLE *threads = new HANDLE[numberOfClients];
     for (size_t i = 0; i < numberOfClients; ++i)
     {
-        pipes[i] = CreateNamedPipeA(
-            pipeName.c_str(), 
-            PIPE_ACCESS_DUPLEX, 
-            PIPE_TYPE_MESSAGE | PIPE_WAIT, 
-            numberOfClients,
-            0,
-            0,
-            INFINITE,
-            NULL);
-
-        if (pipes[i] == INVALID_HANDLE_VALUE)
-        {
-            std::cerr << "Cannot open pipe: " << GetLastError() << "\n";
-            return 2;
-        }
+        DWORD thread_id;
+        threads[i] = CreateThread(NULL, 0, InteractWithClientThread, (LPVOID*)(&numberOfClients), NULL, &thread_id);
     }
+
+    // waiting for all threads to exit
+    WaitForMultipleObjects(numberOfClients, threads, TRUE, INFINITE);
 
     // freeing memory
     for (size_t i = 0; i < numberOfClients; ++i)
     {
-        CloseHandle(pipes[i]);
+        CloseHandle(threads[i]);
     }
-    delete[] pipes;
+    delete[] threads;
     delete[] employees;
     return 0;
 }
