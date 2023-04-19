@@ -47,8 +47,6 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
     Controller *ctrl = args.ctrl;
     CRITICAL_SECTION *iocs = args.iocs;
 
-    std::size_t successFailureSize = 1;
-
     // creating named pipe
     HANDLE pipe = CreateNamedPipeA(
         pipeName.c_str(),
@@ -139,7 +137,7 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
                 std::cout << "Thread " << threadId << " is waiting for client to stop reading record\n";
                 LeaveCriticalSection(iocs);
 
-                ReadFile(pipe, &response, successFailureSize, &bytes, NULL);
+                ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
 
                 if (Protocol::FINISH != response)
                 {
@@ -151,14 +149,17 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 
                 // marking record as not being read
                 SetEvent(notBeingReadByClientEvent);
+
                 EnterCriticalSection(iocs);
                 std::cout << "Thread " << threadId << " has stopped reading record\n";
+                LeaveCriticalSection(iocs);
+
                 CloseHandle(notBeingModifiedEvent);
                 CloseHandle(notBeingReadByClientEvent);
             }
             else
             {
-                WriteFile(pipe, &Protocol::FAILURE, successFailureSize, &bytes, NULL);
+                WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
             }
         }
         else if (Protocol::MODIFY == request)
@@ -236,7 +237,7 @@ int main()
 
     std::cout << "Initialized critical section\n";
 
-    // creating set of numberOfClients events for every numberOfRecords
+    // creating set of client events for every record
     // event will be set if record i is not read by client j
     HANDLE **notReadEvents = new HANDLE *[numberOfRecords];
     for (size_t i = 0; i < numberOfRecords; ++i)
@@ -288,7 +289,7 @@ int main()
     DeleteCriticalSection(iocs);
     for (size_t i = 0; i < numberOfRecords; ++i)
     {
-        for (size_t j = 0; j < numberOfClients; ++i)
+        for (size_t j = 0; j < numberOfClients; ++j)
         {
             CloseHandle(notReadEvents[i][j]);
         }
