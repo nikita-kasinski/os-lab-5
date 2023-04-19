@@ -171,7 +171,7 @@ int main()
         threads[i] = CreateThread(NULL, 0, InteractWithClientThread, (LPVOID *)(&args), NULL, &thread_id);
     }
 
-    // creating set of numberOfClients evetns for every numberOfRecords
+    // creating set of numberOfClients events for every numberOfRecords
     // event will be set if record i is not read by client j
     HANDLE **notReadEvents = new HANDLE*[numberOfRecords];
     for (size_t i = 0; i < numberOfRecords; ++i)
@@ -185,6 +185,18 @@ int main()
             notReadEvents[i][j] = CreateEventA(NULL, FALSE, TRUE, eventName.str().c_str());
         }
     }
+
+    // creating write events for every record
+    // The event is set when record is not being modified
+    HANDLE *notWriteEvents = new HANDLE[numberOfRecords];
+    for (size_t i = 0; i < numberOfRecords; ++i)
+    {
+        std::string eventNameTemplate = "Write event ";
+        std::ostringstream eventName(eventNameTemplate);
+        eventName << i;
+        notWriteEvents[i] = CreateEventA(NULL, FALSE, TRUE, eventName.str().c_str());
+    }
+
     // starting clients
     for (size_t i = 0; i < numberOfClients; ++i)
     {
