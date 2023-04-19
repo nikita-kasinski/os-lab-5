@@ -40,8 +40,7 @@ int main()
 
     while (true)
     {
-        int request = -1;
-        std::cin >> request;
+        size_t request = Utility::safeUnsignedIntegerInput(std::cin, std::cout, "Enter request: ", "Value must be positive integer\n");
         DWORD bytes;
 
         if (request == 0)
@@ -66,8 +65,11 @@ int main()
             WriteFile(pipe, &Protocol::READ, Protocol::SIZE, &bytes, NULL);
             WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
 
+            std::cout << "Waiting for record to become available for reading\n";
+
             char response;
             ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+
             
             if (Protocol::FAILURE == response)
             {
@@ -76,6 +78,8 @@ int main()
             }
             else if (Protocol::SUCCESS == response)
             {
+                std::cout << "Access granted\n";
+
                 Employee employeeRead;
                 ReadFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
                 std::cout << "Employee received\n";
@@ -102,11 +106,16 @@ int main()
             WriteFile(pipe, &Protocol::MODIFY, Protocol::SIZE, &bytes, NULL);
             WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
 
+            std::cout << "Waiting for record to become available for modifying\n";
+
             char response;
             ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
 
+
             if (Protocol::SUCCESS == response)
             {
+                std::cout << "Access granted\n";
+
                 // reading old record
                 Employee employeeRead;
                 ReadFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
