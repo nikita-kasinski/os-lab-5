@@ -50,7 +50,8 @@ int main()
         }
         else if (request == 1)
         {
-            WriteFile(pipe, &QUIT, 1, &bytes, NULL);
+            WriteFile(pipe, &Protocol::QUIT, Protocol::SIZE, &bytes, NULL);
+
             std::cout << "Quit.\n";
             break;
         }
@@ -62,18 +63,18 @@ int main()
             std::cout << keyPrompt;
             std::cin >> key;
 
-            WriteFile(pipe, &READ, 1, &bytes, NULL);
+            WriteFile(pipe, &Protocol::READ, Protocol::SIZE, &bytes, NULL);
             WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
 
             char response;
             ReadFile(pipe, &response, 1, &bytes, NULL);
             
-            if (response == FAILURE)
+            if (Protocol::FAILURE == response)
             {
                 std::cout << "There is no employee under such id\n";
                 continue;
             }
-            else if (response == SUCCESS)
+            else if (Protocol::SUCCESS == response)
             {
                 Employee employeeRead;
                 ReadFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
@@ -82,7 +83,7 @@ int main()
                 std::cout << "Enter any key to continue\n";
                 char x;
                 std::cin >> x;
-                WriteFile(pipe, &FINISH, 1, &bytes, NULL);
+                WriteFile(pipe, &Protocol::FINISH, Protocol::SIZE, &bytes, NULL);
             }
             else 
             {
@@ -98,7 +99,7 @@ int main()
             std::cout << keyPrompt;
             std::cin >> key;
 
-            WriteFile(pipe, &MODIFY, 1, &bytes, NULL);
+            WriteFile(pipe, &Protocol::MODIFY, Protocol::SIZE, &bytes, NULL);
             WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
         }
         else
