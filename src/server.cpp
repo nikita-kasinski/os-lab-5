@@ -125,41 +125,47 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 
                 // reading record and sending to client
                 Employee employeeRead;
-                ctrl->getRecord(key, employeeRead);
-
-                EnterCriticalSection(iocs);
-                std::cout << "Thread " << threadId << " has read employee and has sent it\n";
-                LeaveCriticalSection(iocs);
-
-                WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
-                WriteFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
-
-                char response;
-
-                // waiting for client to finish access to record
-                EnterCriticalSection(iocs);
-                std::cout << "Thread " << threadId << " is waiting for client to stop reading record\n";
-                LeaveCriticalSection(iocs);
-
-                ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
-
-                if (Protocol::FINISH != response)
+                if (ctrl->getRecord(key, employeeRead))
                 {
+
                     EnterCriticalSection(iocs);
-                    std::cerr << "Protocol violation on stopping reading a record\n. Exit thread";
+                    std::cout << "Thread " << threadId << " has read employee and has sent it\n";
                     LeaveCriticalSection(iocs);
-                    ExitThread(2);
+
+                    WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
+                    WriteFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+
+                    char response;
+
+                    // waiting for client to finish access to record
+                    EnterCriticalSection(iocs);
+                    std::cout << "Thread " << threadId << " is waiting for client to stop reading record\n";
+                    LeaveCriticalSection(iocs);
+
+                    ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+
+                    if (Protocol::FINISH != response)
+                    {
+                        EnterCriticalSection(iocs);
+                        std::cerr << "Protocol violation on stopping reading a record\n. Exit thread";
+                        LeaveCriticalSection(iocs);
+                        ExitThread(2);
+                    }
+
+                    // marking record as not being read
+                    SetEvent(notBeingReadByClientEvent);
+
+                    EnterCriticalSection(iocs);
+                    std::cout << "Thread " << threadId << " has stopped reading record\n";
+                    LeaveCriticalSection(iocs);
+
+                    CloseHandle(notBeingModifiedEvent);
+                    CloseHandle(notBeingReadByClientEvent);
                 }
-
-                // marking record as not being read
-                SetEvent(notBeingReadByClientEvent);
-
-                EnterCriticalSection(iocs);
-                std::cout << "Thread " << threadId << " has stopped reading record\n";
-                LeaveCriticalSection(iocs);
-
-                CloseHandle(notBeingModifiedEvent);
-                CloseHandle(notBeingReadByClientEvent);
+                else
+                {
+                    WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+                }
             }
             else
             {
@@ -209,43 +215,48 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 
                 // reading record
                 Employee employeeRead;
-                ctrl->getRecord(key, employeeRead);
-                Utility::printEmployee(std::cout, employeeRead);
-
-                // writing record
-                WriteFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
-
-                // reading new record
-                ReadFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
-
-                if (ctrl->setRecord(key, employeeRead))
+                if (ctrl->getRecord(key, employeeRead))
                 {
-                    WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
 
-                    char response;
-                    ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+                    // writing record
+                    WriteFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
-                    if (Protocol::FINISH != response)
+                    // reading new record
+                    ReadFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+
+                    if (ctrl->setRecord(key, employeeRead))
                     {
-                        EnterCriticalSection(iocs);
-                        std::cout << "Thread " << threadId << " protocol violation. Abort\n";
-                        ExitThread(4);
+                        WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
+
+                        char response;
+                        ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+
+                        if (Protocol::FINISH != response)
+                        {
+                            EnterCriticalSection(iocs);
+                            std::cout << "Thread " << threadId << " protocol violation. Abort\n";
+                            ExitThread(4);
+                        }
                     }
+                    else
+                    {
+                        WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+                    }
+
+                    // marking record as not being modified
+                    SetEvent(notBeingModifiedEvent);
+
+                    CloseHandle(notBeingModifiedEvent);
+                    for (size_t i = 0; i < numberOfClients; ++i)
+                    {
+                        CloseHandle(notBeingReadEvents[i]);
+                    }
+                    delete[] notBeingReadEvents;
                 }
                 else
                 {
                     WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
                 }
-
-                // marking record as not being modified
-                SetEvent(notBeingModifiedEvent);
-
-                CloseHandle(notBeingModifiedEvent);
-                for (size_t i = 0; i < numberOfClients; ++i)
-                {
-                    CloseHandle(notBeingReadEvents[i]);
-                }
-                delete[] notBeingReadEvents;
             }
             else
             {
