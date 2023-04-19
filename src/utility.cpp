@@ -100,15 +100,15 @@ void Utility::printEmployees(std::ostream &out, const Employee *array, const siz
 std::string Utility::getReadEventName(const std::size_t &recordId, const std::size_t &clientId)
 {
     std::string eventNameTemplate = "Read event";
-    std::ostringstream eventName(eventNameTemplate);
-    eventName << recordId << ' ' << clientId;
+    std::ostringstream eventName;
+    eventName << eventNameTemplate << ' ' << recordId << ' ' << clientId;
     return eventName.str();
 }
 
 std::string Utility::getWriteEventName(const std::size_t &recordId)
 {
-    std::string eventNameTemplate = "Write event ";
-    std::ostringstream eventName(eventNameTemplate);
-    eventName << recordId;
+    std::string eventNameTemplate = "Write event";
+    std::ostringstream eventName;
+    eventName << eventNameTemplate << ' ' << recordId;
     return eventName.str();
 }
