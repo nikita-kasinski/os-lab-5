@@ -43,7 +43,6 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
     ThreadArgs args = *(ThreadArgs *)_args;
     std::size_t threadId = args.id;
     std::size_t numberOfClients = args.numberOfClients;
-    std::size_t numberOfRecords = args.numberOfRecords;
     Controller *ctrl = args.ctrl;
     CRITICAL_SECTION *iocs = args.iocs;
 
@@ -133,7 +132,7 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
                 LeaveCriticalSection(iocs);
 
                 WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
-                WriteFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                WriteFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
                 char response;
 
@@ -173,7 +172,7 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 
             // reading key
             int key;
-            ReadFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
+            ReadFile(pipe, reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
 
             // trying to get recordId by id
             size_t recordId;
@@ -214,10 +213,10 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
                 Utility::printEmployee(std::cout, employeeRead);
 
                 // writing record
-                WriteFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                WriteFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
                 // reading new record
-                ReadFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                ReadFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
                 if (ctrl->setRecord(key, employeeRead))
                 {
@@ -361,7 +360,7 @@ int main()
         args[i].numberOfRecords = numberOfRecords;
         args[i].ctrl = &ctrl;
         args[i].iocs = iocs;
-        threads[i] = CreateThread(NULL, 0, InteractWithClientThread, (LPVOID *)(&args[i]), NULL, &thread_id);
+        threads[i] = CreateThread(NULL, 0, InteractWithClientThread, (LPVOID *)(&args[i]), 0, &thread_id);
     }
 
     // starting clients
@@ -372,6 +371,14 @@ int main()
 
     // waiting for all threads to exit. It is better to change INFINITE to some constant like 10 minutes
     WaitForMultipleObjects(numberOfClients, threads, TRUE, INFINITE);
+
+    {
+        std::cout << "Modified binary file\n";
+        size_t sizeRead;
+        Employee *employeesRead = ctrl.getAllRecords(sizeRead);
+        Utility::printEmployees(std::cout, employeesRead, sizeRead);
+        delete[] employeesRead;
+    }
 
     // freeing memory
     delete[] args;
