@@ -67,7 +67,7 @@ int main()
             WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
 
             char response;
-            ReadFile(pipe, &response, 1, &bytes, NULL);
+            ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
             
             if (Protocol::FAILURE == response)
             {
@@ -101,6 +101,60 @@ int main()
 
             WriteFile(pipe, &Protocol::MODIFY, Protocol::SIZE, &bytes, NULL);
             WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
+
+            char response;
+            ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+
+            if (Protocol::SUCCESS == response)
+            {
+                // reading old record
+                Employee employeeRead;
+                ReadFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+
+                // printing old record
+                std::cout << "Old record\n";
+                Utility::printEmployee(std::cout, employeeRead);
+
+                // recieving new record
+                std::cout << "Enter new values for this record\n";
+                employeeRead = Utility::readEmployee(std::cin, std::cout);
+
+                // writing rew record to pipe
+                WriteFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+
+                // reading response
+                char response;
+                ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+
+                if (Protocol::SUCCESS == response)
+                {
+                    std::cout << "The record was changed successfully\n";
+                    std::cout << "Enter any key to continue\n";
+                    char x;
+                    std::cin >> x;
+                    WriteFile(pipe, &Protocol::FINISH, Protocol::SIZE, &bytes, NULL);
+                }
+                else if (Protocol::FAILURE == response)
+                {
+                    std::cout << "The id of new record is already taken\n";
+                    continue;
+                }   
+                else
+                {
+                    std::cout << "Protocol violation. Abort\n";
+                    break;
+                }
+            }
+            else if (Protocol::FAILURE == response)
+            {
+                std::cout << "No record under such id\n";
+                continue;
+            }
+            else
+            {
+                std::cout << "Protocol violation. Abort\n";
+                break;
+            }
         }
         else
         {
