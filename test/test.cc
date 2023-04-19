@@ -415,3 +415,52 @@ TEST(Utility_getReadEventName, StandartFlow)
     std::string expectedEventName = "Read event 1 2";
     EXPECT_EQ(expectedEventName, Utility::getReadEventName(1, 2));
 }
+
+TEST(Controller_idToRecordId, FictitiousId)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {7, "vasya", 4.8};
+    Employee secondEmployee = {15, "petya", 5.2};
+    Employee thirdEmployee = {2, "kostya", 7};
+    Employee forthEmployee = {9, "vitya", 10};
+    Employee fifthEmployee = {28, "sasha", 12};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+
+    size_t recordId;
+    EXPECT_FALSE(ctrl.idToRecordId(5, recordId));
+}
+
+TEST(Controller_idToRecordId, StandartFlow)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {7, "vasya", 4.8};
+    Employee secondEmployee = {15, "petya", 5.2};
+    Employee thirdEmployee = {2, "kostya", 7};
+    Employee forthEmployee = {9, "vitya", 10};
+    Employee fifthEmployee = {28, "sasha", 12};
+    Employee employees[size] = {firstEmployee, secondEmployee, thirdEmployee, forthEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+
+    size_t recordId;
+    EXPECT_TRUE(ctrl.idToRecordId(7, recordId));
+    EXPECT_EQ(recordId, 0);
+
+    EXPECT_TRUE(ctrl.idToRecordId(15, recordId));
+    EXPECT_EQ(recordId, 1);
+
+    EXPECT_TRUE(ctrl.idToRecordId(2, recordId));
+    EXPECT_EQ(recordId, 2);
+
+    EXPECT_TRUE(ctrl.idToRecordId(9, recordId));
+    EXPECT_EQ(recordId, 3);
+
+    EXPECT_TRUE(ctrl.idToRecordId(28, recordId));
+    EXPECT_EQ(recordId, 4);
+}
