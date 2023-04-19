@@ -1,10 +1,14 @@
 #include <gtest/gtest.h>
 #include <string>
+
+#define private public
+
 #include "model.h"
 #include "utility.h"
 #include "controller.h"
 
-TEST(TestModelReadRecord, TestOnlyOneRecord)
+
+TEST(Model_readRecord, OnlyOneRecord)
 {
     constexpr std::size_t size = 1;
     Employee firstEmployee = {1, "vasya", 5.2};
@@ -15,7 +19,7 @@ TEST(TestModelReadRecord, TestOnlyOneRecord)
     EXPECT_EQ(firstEmployee, model.readRecord(0));
 }
 
-TEST(TestModelReadRecord, TestSeveralRecords)
+TEST(Model_readRecord, SeveralRecords)
 {
     constexpr std::size_t size = 3;
     Employee firstEmployee = {1, "vasya", 4.8};
@@ -34,7 +38,7 @@ TEST(TestModelReadRecord, TestSeveralRecords)
 }
 
 // it is vital to write tests with same id and different ids for controller, model doesn't care but controller does
-TEST(TestModelWriteRecord, TestOneRecord)
+TEST(Model_writeRecord, OneRecord)
 {
     constexpr std::size_t size = 1;
     Employee firstEmployee = {1, "vasya", 4.8};
@@ -48,7 +52,7 @@ TEST(TestModelWriteRecord, TestOneRecord)
     EXPECT_EQ(newFirstEmployee, model.readRecord(0));
 }
 
-TEST(TestModelWriteRecord, TestSeveralRecords)
+TEST(Model_writeRecord, SeveralRecords)
 {
     constexpr std::size_t size = 3;
     Employee firstEmployee = {1, "vasya", 4.8};
@@ -74,14 +78,14 @@ TEST(TestModelWriteRecord, TestSeveralRecords)
     EXPECT_EQ(newThirdEmployee, model.readRecord(2));
 }
 
-TEST(TestUtilityHasEquals, TestNoEquals)
+TEST(Utility_hasEquals, NoEquals)
 {
     constexpr std::size_t size = 4;
     int array[size] = {1, 2, 3, 4};
     EXPECT_FALSE(Utility::hasEquals(array, size));
 }
 
-TEST(TestUtilityHasEquals, ZeroElems)
+TEST(Utility_hasEquals, ZeroElems)
 {
     constexpr std::size_t size = 0;
     int *array = nullptr;
@@ -95,21 +99,21 @@ TEST(TestUtilityHasEquals, OneElem)
     EXPECT_FALSE(Utility::hasEquals(array, size));
 }
 
-TEST(TestUtilityHasEquals, TwoEquals)
+TEST(Utility_hasEquals, TwoEquals)
 {
     constexpr std::size_t size = 5;
     int array[size] = {1, 2, 3, 4, 1};
     EXPECT_TRUE(Utility::hasEquals(array, size));
 }
 
-TEST(TestUtilityHasEquals, AllEquals)
+TEST(Utility_hasEquals, AllEquals)
 {
     constexpr std::size_t size = 5;
     int array[size] = {1, 1, 1, 1, 1};
     EXPECT_TRUE(Utility::hasEquals(array, size));
 }
 
-TEST(TestUtilityExtractIds, oneElem)
+TEST(Utility_extractIds, OneElem)
 {
     constexpr std::size_t size = 1;
     Employee firstEmployee = {1, "vasya", 4.8};
@@ -120,7 +124,7 @@ TEST(TestUtilityExtractIds, oneElem)
         EXPECT_EQ(ids[i], employees[i].id);
     }
 }
-TEST(TestUtilityExtractIds, SeveralElems)
+TEST(Utility_extractIds, severalElems)
 {
     constexpr std::size_t size = 5;
     Employee firstEmployee = {1, "vasya", 4.8};
@@ -137,7 +141,7 @@ TEST(TestUtilityExtractIds, SeveralElems)
     delete[] ids;
 }
 
-TEST(TestUtilityFillMap, TestStandartFlow)
+TEST(Utility_fillMap, StandartFlow)
 {
     constexpr std::size_t size = 5;
     Employee firstEmployee = {5, "vasya", 4.8};
@@ -224,7 +228,6 @@ TEST(Controller_getRecord, TestFictitiousId)
     EXPECT_FALSE(ctrl.getRecord(7, employeeRead));
 }
 
-
 TEST(Controller_writeRecord, FictitiousId)
 {
     constexpr std::size_t size = 5;
@@ -308,7 +311,7 @@ TEST(Controller_writeRecord, NewIdIsTaken)
     EXPECT_FALSE(ctrl.setRecord(4, newEmployee));
 }
 
-TEST(TestSafeUnsignedIntegerInput, TestStandardInput)
+TEST(Utility_safeUnsignedIntegerInput, StandardInput)
 {
     std::istringstream testStream("1 2 3 4\n");
     std::ostringstream ostream;
@@ -323,7 +326,7 @@ TEST(TestSafeUnsignedIntegerInput, TestStandardInput)
     EXPECT_EQ(d, 4);
 }
 
-TEST(TestSafeUnsignedIntegerInput, TestFailedInput)
+TEST(Utility_safeUnsignedIntegerInput, FailedInput)
 {
     std::istringstream testStream("asdfbsda1\n2 sadgsadg123gasd\n 3\n");
     std::ostringstream ostream;
@@ -334,11 +337,69 @@ TEST(TestSafeUnsignedIntegerInput, TestFailedInput)
     EXPECT_EQ(b, 3);
 }
 
-TEST(TestSafeUnsignedIntegerInput, TestNegativeInput)
+TEST(Utility_safeUnsignedIntegerInput, NegativeInput)
 {
     std::istringstream testStream("skldghuhasdkjgn\n -1 \n2\n");
     std::ostringstream ostream;
     size_t a;
     a = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
     EXPECT_EQ(a, 2);
+}
+
+TEST(Utility_readEmployee, StandartFlow)
+{
+    std::istringstream testStream("1 vasya 1\n2 petya 2");
+    std::ostringstream out;
+    Employee firstEmployee = {1, "vasya", 1};
+    Employee secondEmployee = {2, "petya", 2};
+    EXPECT_EQ(firstEmployee, Utility::readEmployee(testStream, out));
+    EXPECT_EQ(secondEmployee, Utility::readEmployee(testStream, out));
+}
+
+TEST(Utility_printEmployee, StandartFlow)
+{
+    std::ostringstream out;
+    std::ostringstream expectedOut;
+    Employee firstEmployee = {1, "vasya", 1};
+    Employee secondEmployee = {2, "petya", 2};
+    Employee employees[2] = {firstEmployee, secondEmployee};
+    for (size_t i = 0; i < 2; ++i)
+    {
+        expectedOut
+            << std::setw(Utility::idWidth) << employees[i].id
+            << std::setw(Utility::nameWidth) << employees[i].name
+            << std::setw(Utility::hoursWidth) << employees[i].hours
+            << "\n";
+    }
+    
+    Utility::printEmployee(out, firstEmployee);
+    Utility::printEmployee(out, secondEmployee);
+
+    EXPECT_EQ(expectedOut.str(), out.str());
+}
+
+TEST(Utility_printEmployees, StandartFlow)
+{
+    std::ostringstream out;
+    std::ostringstream expectedOut;
+    Employee firstEmployee = {1, "vasya", 1};
+    Employee secondEmployee = {2, "petya", 2};
+    Employee employees[2] = {firstEmployee, secondEmployee};
+    expectedOut
+            << std::setw(Utility::idWidth) << "id"
+            << std::setw(Utility::nameWidth) << "name"
+            << std::setw(Utility::hoursWidth) << "hours"
+            << "\n";
+    for (size_t i = 0; i < 2; ++i)
+    {
+        expectedOut
+            << std::setw(Utility::idWidth) << employees[i].id
+            << std::setw(Utility::nameWidth) << employees[i].name
+            << std::setw(Utility::hoursWidth) << employees[i].hours
+            << "\n";
+    }
+    
+    Utility::printEmployees(out, employees, 2);
+
+    EXPECT_EQ(expectedOut.str(), out.str());
 }
