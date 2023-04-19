@@ -464,3 +464,28 @@ TEST(Controller_idToRecordId, StandartFlow)
     EXPECT_TRUE(ctrl.idToRecordId(28, recordId));
     EXPECT_EQ(recordId, 4);
 }
+
+TEST(Controler_getAllRecords, StandartFlow)
+{
+    constexpr std::size_t size = 5;
+    Employee firstEmployee = {7, "vasya", 4.8};
+    Employee secondEmployee = {15, "petya", 5.2};
+    Employee thirdEmployee = {2, "kostya", 7};
+    Employee forthEmployee = {9, "vitya", 10};
+    Employee fifthEmployee = {28, "sasha", 12};
+    Employee employees[size] = {thirdEmployee, firstEmployee, forthEmployee, secondEmployee, fifthEmployee};
+    const std::string binaryFileName = "testbinary";
+    bool ok;
+    Controller ctrl(binaryFileName, employees, size, ok);
+    EXPECT_TRUE(ok);
+
+    size_t returnedSize;
+    Employee *returnedEmployees = ctrl.getAllRecords(returnedSize);
+
+    ASSERT_EQ(returnedSize, size);
+    for (size_t i = 0; i < size; ++i)
+    {
+        EXPECT_EQ(employees[i], returnedEmployees[i]);
+    }
+    delete[] returnedEmployees;
+}
