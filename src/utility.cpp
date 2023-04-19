@@ -81,7 +81,7 @@ size_t Utility::safeUnsignedIntegerInput(std::istream &in, std::ostream &out, co
     return static_cast<size_t>(tempAns);
 }
 
-void Utility::printEmployees(std::ostream& out, const Employee* array, const size_t &size)
+void Utility::printEmployees(std::ostream &out, const Employee *array, const size_t &size)
 {
     // print header
     out
@@ -95,4 +95,20 @@ void Utility::printEmployees(std::ostream& out, const Employee* array, const siz
     {
         printEmployee(out, array[i]);
     }
+}
+
+std::string Utility::getReadEventName(const std::size_t &recordId, const std::size_t &clientId)
+{
+    std::string eventNameTemplate = "Read event";
+    std::ostringstream eventName(eventNameTemplate);
+    eventName << recordId << ' ' << clientId;
+    return eventName.str();
+}
+
+std::string Utility::getWriteEventName(const std::size_t &recordId)
+{
+    std::string eventNameTemplate = "Write event ";
+    std::ostringstream eventName(eventNameTemplate);
+    eventName << recordId;
+    return eventName.str();
 }
