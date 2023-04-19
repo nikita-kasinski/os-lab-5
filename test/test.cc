@@ -403,3 +403,15 @@ TEST(Utility_printEmployees, StandartFlow)
 
     EXPECT_EQ(expectedOut.str(), out.str());
 }
+
+TEST(Utility_getWriteEventName, StandartFlow)
+{
+    std::string expectedEventName = "Write event 1";
+    EXPECT_EQ(expectedEventName, Utility::getWriteEventName(1));
+}
+
+TEST(Utility_getReadEventName, StandartFlow)
+{
+    std::string expectedEventName = "Read event 1 2";
+    EXPECT_EQ(expectedEventName, Utility::getReadEventName(1, 2));
+}
