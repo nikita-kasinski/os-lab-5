@@ -40,11 +40,15 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 {
     const std::string pipeName = R"(\\.\pipe\os-lab5-pipe)";
     ThreadArgs args = *(ThreadArgs *)_args;
-    size_t threadId = args.id;
-    size_t numberOfClients = args.numberOfClients;
-    size_t numberOfRecords = args.numberOfRecords;
+    std::size_t threadId = args.id;
+    std::size_t numberOfClients = args.numberOfClients;
+    std::size_t numberOfRecords = args.numberOfRecords;
     Controller *ctrl = args.ctrl;
     CRITICAL_SECTION *iocs = args.iocs;
+    constexpr char SUCCESS = 1;
+    constexpr char FAILURE = 0;
+    constexpr char FINISH = 2;
+    std::size_t successFailureSize = 1;
 
     // creating named pipe
     HANDLE pipe = CreateNamedPipeA(
@@ -103,10 +107,8 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 
             if (keyExists)
             {
-                std::string modifyEventNameTemplate = "Write event ";
-                std::ostringstream modifyEventName(modifyEventNameTemplate);
-                modifyEventName << recordId;
-                HANDLE notBeingModifiedEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, modifyEventName.str().c_str());
+                HANDLE notBeingModifiedEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, Utility::getWriteEventName(recordId).c_str());
+                HANDLE notBeingReadByClientEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, Utility::getReadEventName(recordId, threadId).c_str());
 
                 EnterCriticalSection(iocs);
                 std::cout << "Thread " << threadId << "is waiting for record with key " << key << " to become available\n";
@@ -114,14 +116,37 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 
                 WaitForSingleObject(notBeingModifiedEvent, INFINITE); // waiting for record to become available
 
-                char message[5];
-                message[0] = 1;
-                Sleep(10000);
-                memcpy(&message[1], reinterpret_cast<char *>(&key), 4);
-                WriteFile(pipe, message, 5, &bytes, NULL);
+                // marking record as being read
+                ResetEvent(notBeingReadByClientEvent);
+
+                // reading record and sending to client
+                Employee employeeRead;
+                ctrl->getRecord(key, employeeRead);
+                WriteFile(pipe, &SUCCESS, successFailureSize, &bytes, NULL);
+                WriteFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+
+                char response;
+
+                // waiting for client to finish access to record
+                ReadFile(pipe, &response, successFailureSize, &bytes, NULL);
+
+                if (response != FINISH)
+                {
+                    EnterCriticalSection(iocs);
+                    std::cerr << "Protocol violation on stopping reading a record\n. Exit thread";
+                    LeaveCriticalSection(iocs);
+                    ExitThread(2);
+                }
+
+                // marking record as not being read
+                SetEvent(notBeingReadByClientEvent);
+
+                CloseHandle(notBeingModifiedEvent);
+                CloseHandle(notBeingReadByClientEvent);
             }
             else
             {
+                WriteFile(pipe, &FAILURE, successFailureSize, &bytes, NULL);
             }
         }
         else if (request == 2)
@@ -130,11 +155,18 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
         }
         else
         {
-            std::cerr << "Protocol violation\n";
+            EnterCriticalSection(iocs);
+            std::cerr << "Protocol violation. Exit thread\n";
+            LeaveCriticalSection(iocs);
+
+            ExitThread(3);
         }
     }
 
+    EnterCriticalSection(iocs);
     std::cout << "Thread ended\n";
+    LeaveCriticalSection(iocs);
+
     CloseHandle(pipe);
 }
 
@@ -195,12 +227,9 @@ int main()
     for (size_t i = 0; i < numberOfRecords; ++i)
     {
         notReadEvents[i] = new HANDLE[numberOfClients];
-        std::string eventNameTemplate = "Read event";
         for (size_t j = 0; j < numberOfClients; ++i)
         {
-            std::ostringstream eventName(eventNameTemplate);
-            eventName << i << ' ' << j;
-            notReadEvents[i][j] = CreateEventA(NULL, FALSE, TRUE, eventName.str().c_str());
+            notReadEvents[i][j] = CreateEventA(NULL, FALSE, TRUE, Utility::getReadEventName(i, j).c_str());
         }
     }
 
@@ -209,10 +238,7 @@ int main()
     HANDLE *notWriteEvents = new HANDLE[numberOfRecords];
     for (size_t i = 0; i < numberOfRecords; ++i)
     {
-        std::string eventNameTemplate = "Write event ";
-        std::ostringstream eventName(eventNameTemplate);
-        eventName << i;
-        notWriteEvents[i] = CreateEventA(NULL, FALSE, TRUE, eventName.str().c_str());
+        notWriteEvents[i] = CreateEventA(NULL, FALSE, TRUE, Utility::getWriteEventName(i).c_str());
     }
 
     // starting client interaction
