@@ -8,6 +8,7 @@
 #include "utility.h"
 #include "controller.h"
 #include "args.h"
+#include "protocol.h"
 
 BOOL StartClient()
 {
@@ -45,9 +46,7 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
     std::size_t numberOfRecords = args.numberOfRecords;
     Controller *ctrl = args.ctrl;
     CRITICAL_SECTION *iocs = args.iocs;
-    constexpr char SUCCESS = 1;
-    constexpr char FAILURE = 0;
-    constexpr char FINISH = 2;
+
     std::size_t successFailureSize = 1;
 
     // creating named pipe
@@ -64,14 +63,18 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
     if (pipe == INVALID_HANDLE_VALUE)
     {
         // pipe didn't open
-        std::cerr << "Cannot open pipe: " << GetLastError() << "\n";
+        EnterCriticalSection(iocs);
+        std::cerr << "Thread " << threadId << " cannot open a pipe: " << GetLastError() << "\n";
+        LeaveCriticalSection(iocs);
         return 2;
     }
 
     if (!ConnectNamedPipe(pipe, NULL))
     {
         CloseHandle(pipe);
-        std::cerr << "Connection error: " << GetLastError() << "\n";
+        EnterCriticalSection(iocs);
+        std::cerr << "Thread " << threadId << ". Connection error: " << GetLastError() << "\n";
+        LeaveCriticalSection(iocs);
         return 3;
     }
 
@@ -79,18 +82,17 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
     {
         DWORD bytesRead;
         char request;
-        std::cout << "Thread is working\n";
+        EnterCriticalSection(iocs);
+        std::cout << "Thread " << threadId << " is working\n";
+        LeaveCriticalSection(iocs);
+
         ReadFile(pipe, &request, sizeof(char), &bytesRead, NULL);
 
-        // 0 is quit
-        // 1 is read record
-        // 2 is modify record
-
-        if (request == 0)
+        if (Protocol::QUIT == request)
         {
             break;
         }
-        else if (request == 1)
+        else if (Protocol::READ == request)
         {
             // reading record
             DWORD bytes;
@@ -111,7 +113,7 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
                 HANDLE notBeingReadByClientEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, Utility::getReadEventName(recordId, threadId).c_str());
 
                 EnterCriticalSection(iocs);
-                std::cout << "Thread " << threadId << "is waiting for record with key " << key << " to become available\n";
+                std::cout << "Thread " << threadId << " is waiting for record with key " << key << " to become available\n";
                 LeaveCriticalSection(iocs);
 
                 WaitForSingleObject(notBeingModifiedEvent, INFINITE); // waiting for record to become available
@@ -122,15 +124,24 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
                 // reading record and sending to client
                 Employee employeeRead;
                 ctrl->getRecord(key, employeeRead);
-                WriteFile(pipe, &SUCCESS, successFailureSize, &bytes, NULL);
+
+                EnterCriticalSection(iocs);
+                std::cout << "Thread " << threadId << " has read employee and has sent it\n";
+                LeaveCriticalSection(iocs);
+
+                WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
                 WriteFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
                 char response;
 
                 // waiting for client to finish access to record
+                EnterCriticalSection(iocs);
+                std::cout << "Thread " << threadId << " is waiting for client to stop reading record\n";
+                LeaveCriticalSection(iocs);
+
                 ReadFile(pipe, &response, successFailureSize, &bytes, NULL);
 
-                if (response != FINISH)
+                if (Protocol::FINISH != response)
                 {
                     EnterCriticalSection(iocs);
                     std::cerr << "Protocol violation on stopping reading a record\n. Exit thread";
@@ -140,18 +151,20 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 
                 // marking record as not being read
                 SetEvent(notBeingReadByClientEvent);
-
+                EnterCriticalSection(iocs);
+                std::cout << "Thread " << threadId << " has stopped reading record\n";
                 CloseHandle(notBeingModifiedEvent);
                 CloseHandle(notBeingReadByClientEvent);
             }
             else
             {
-                WriteFile(pipe, &FAILURE, successFailureSize, &bytes, NULL);
+                WriteFile(pipe, &Protocol::FAILURE, successFailureSize, &bytes, NULL);
             }
         }
-        else if (request == 2)
+        else if (Protocol::MODIFY == request)
         {
             // modifying record
+
         }
         else
         {
@@ -218,8 +231,10 @@ int main()
         "Value must be positive integer\n");
 
     // creating critical sections for safe output via stdout
-    CRITICAL_SECTION iocs;
-    InitializeCriticalSection(&iocs);
+    CRITICAL_SECTION *iocs = new CRITICAL_SECTION;
+    InitializeCriticalSection(iocs);
+
+    std::cout << "Initialized critical section\n";
 
     // creating set of numberOfClients events for every numberOfRecords
     // event will be set if record i is not read by client j
@@ -227,11 +242,13 @@ int main()
     for (size_t i = 0; i < numberOfRecords; ++i)
     {
         notReadEvents[i] = new HANDLE[numberOfClients];
-        for (size_t j = 0; j < numberOfClients; ++i)
+        for (size_t j = 0; j < numberOfClients; ++j)
         {
             notReadEvents[i][j] = CreateEventA(NULL, FALSE, TRUE, Utility::getReadEventName(i, j).c_str());
         }
     }
+
+    std::cout << "Created read events\n";
 
     // creating write events for every record
     // The event is set when record is not being modified
@@ -241,17 +258,20 @@ int main()
         notWriteEvents[i] = CreateEventA(NULL, FALSE, TRUE, Utility::getWriteEventName(i).c_str());
     }
 
+    std::cout << "Created write events\n";
+
     // starting client interaction
     HANDLE *threads = new HANDLE[numberOfClients];
+    ThreadArgs *args = new ThreadArgs[numberOfClients];
     for (size_t i = 0; i < numberOfClients; ++i)
     {
         DWORD thread_id;
-        ThreadArgs args;
-        args.id = i;
-        args.numberOfClients = numberOfClients;
-        args.numberOfRecords = numberOfRecords;
-        args.ctrl = &ctrl;
-        threads[i] = CreateThread(NULL, 0, InteractWithClientThread, (LPVOID *)(&args), NULL, &thread_id);
+        args[i].id = i;
+        args[i].numberOfClients = numberOfClients;
+        args[i].numberOfRecords = numberOfRecords;
+        args[i].ctrl = &ctrl;
+        args[i].iocs = iocs;
+        threads[i] = CreateThread(NULL, 0, InteractWithClientThread, (LPVOID *)(&args[i]), NULL, &thread_id);
     }
 
     // starting clients
@@ -264,7 +284,8 @@ int main()
     WaitForMultipleObjects(numberOfClients, threads, TRUE, INFINITE);
 
     // freeing memory
-    DeleteCriticalSection(&iocs);
+    delete[] args;
+    DeleteCriticalSection(iocs);
     for (size_t i = 0; i < numberOfRecords; ++i)
     {
         for (size_t j = 0; j < numberOfClients; ++i)
