@@ -21,7 +21,7 @@ Controller::Controller(
         return;
     }
     ok = true;
-    Utility::fillMap(idToRecordId, employees, size);
+    Utility::fillMap(_idToRecordId, employees, size);
     model.writeBinaryFile(employees, size);
 }
 
@@ -29,7 +29,7 @@ bool Controller::getRecord(const int &id, Employee &employee) const
 {
     try
     {
-        std::size_t recordId = idToRecordId.at(id);
+        std::size_t recordId = _idToRecordId.at(id);
         employee = model.readRecord(recordId);
         return true;
     }
@@ -43,18 +43,18 @@ bool Controller::setRecord(const int& oldId, const Employee &employee)
 {
     try
     {
-        std::size_t recordId = idToRecordId.at(oldId);
+        std::size_t recordId = _idToRecordId.at(oldId);
         int newId = employee.id;
-        idToRecordId.erase(oldId);
+        _idToRecordId.erase(oldId);
         try
         {
-            idToRecordId.at(newId);
+            _idToRecordId.at(newId);
             // thereIsRecord under newId
             return false;
         }
         catch (const std::exception &e)
         {
-            idToRecordId[newId] = recordId;
+            _idToRecordId[newId] = recordId;
             model.writeRecord(recordId, employee);
             return true;
         }
@@ -66,13 +66,28 @@ bool Controller::setRecord(const int& oldId, const Employee &employee)
     }
 }
 
+bool Controller::idToRecordId(const int& id, size_t& recordId) const
+{
+    try
+    {
+        std::size_t _recordId = _idToRecordId.at(id);
+        recordId = _recordId;
+        return true;
+    }
+    catch (const std::exception &e)
+    {
+        // there is no record under oldId
+        return false;
+    }
+}
+
 Employee* Controller::getAllRecords(size_t& size) const
 {
-    size = idToRecordId.size();
+    size = _idToRecordId.size();
     Employee *array = new Employee[size];
 
     size_t i = 0;
-    for (const auto& key_value : idToRecordId)
+    for (const auto& key_value : _idToRecordId)
     {
         Controller::getRecord(key_value.first, array[i]);
         ++i;
