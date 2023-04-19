@@ -6,6 +6,7 @@
 #include <string>
 #include <windows.h>
 #include "utility.h"
+#include "protocol.h"
 
 int main()
 {
@@ -36,19 +37,20 @@ int main()
     std::string keyPrompt = "Input employee id to access its record: ";
 
     std::cout << menu;
+
     while (true)
     {
         int request = -1;
         std::cin >> request;
+        DWORD bytes;
+
         if (request == 0)
         {
             std::cout << menu;
         }
         else if (request == 1)
         {
-            char response = 0;
-            DWORD bytesWritten;
-            WriteFile(pipe, &response, sizeof(response), &bytesWritten, NULL);
+            WriteFile(pipe, &QUIT, 1, &bytes, NULL);
             std::cout << "Quit.\n";
             break;
         }
@@ -59,6 +61,34 @@ int main()
             int key = -1;
             std::cout << keyPrompt;
             std::cin >> key;
+
+            WriteFile(pipe, &READ, 1, &bytes, NULL);
+            WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
+
+            char response;
+            ReadFile(pipe, &response, 1, &bytes, NULL);
+            
+            if (response == FAILURE)
+            {
+                std::cout << "There is no employee under such id\n";
+                continue;
+            }
+            else if (response == SUCCESS)
+            {
+                Employee employeeRead;
+                ReadFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                std::cout << "Employee received\n";
+                Utility::printEmployee(std::cout, employeeRead);
+                std::cout << "Enter any key to continue\n";
+                char x;
+                std::cin >> x;
+                WriteFile(pipe, &FINISH, 1, &bytes, NULL);
+            }
+            else 
+            {
+                std::cerr << "Protocol violation. Abort\n";
+                break;
+            }
         }
         else if (request == 3)
         {
@@ -67,6 +97,9 @@ int main()
             int key = -1;
             std::cout << keyPrompt;
             std::cin >> key;
+
+            WriteFile(pipe, &MODIFY, 1, &bytes, NULL);
+            WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
         }
         else
         {
