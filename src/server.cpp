@@ -88,6 +88,7 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 
         if (Protocol::QUIT == request)
         {
+            DisconnectNamedPipe(pipe);
             break;
         }
         else if (Protocol::READ == request)
