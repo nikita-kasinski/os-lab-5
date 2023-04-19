@@ -41,5 +41,10 @@ public:
         const std::string &inputFailedPrompt);
 
     // outputs employee array into out
-    static void printEmployees(std::ostream& out, const Employee* employees, const size_t& size);
+    static void printEmployees(std::ostream& out, const Employee* employees, const std::size_t& size);
+
+    static std::string getWriteEventName(const std::size_t& recordId);
+
+    static std::string getReadEventName(const std::size_t& recordId, const std::size_t& clientId);
+
 };
