@@ -22,6 +22,7 @@ public:
         const std::shared_ptr<CRITICAL_SECTION>& iocs);
     std::size_t getId() const;
     std::size_t getNumberOfClients() const;
+    std::size_t getNumberOfRecords() const;
     std::shared_ptr<Controller> getController() const;
     std::shared_ptr<CRITICAL_SECTION> getCriticalSection() const;
 };
