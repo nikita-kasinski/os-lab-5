@@ -6,6 +6,7 @@
 #include "model.h"
 #include "utility.h"
 #include "controller.h"
+#include "args.h"
 
 TEST(Model_readRecord, OnlyOneRecord)
 {
@@ -457,4 +458,35 @@ TEST(Controler_getAllRecords, StandartFlow)
     std::vector<Employee> returnedEmployees = ctrl.getAllRecords();
 
     EXPECT_EQ(employees, returnedEmployees);
+}
+
+TEST(ClientHandlerArgs_ClientHandlerArgs, StandartFlow)
+{
+    Employee firstEmployee = {7, "vasya", 4.8};
+    Employee secondEmployee = {15, "petya", 5.2};
+    Employee thirdEmployee = {2, "kostya", 7};
+    Employee forthEmployee = {9, "vitya", 10};
+    Employee fifthEmployee = {28, "sasha", 12};
+    std::vector<Employee> employees = {thirdEmployee, firstEmployee, forthEmployee, secondEmployee, fifthEmployee};
+
+    const std::string binaryFileName = "testbinary";
+
+    bool ok;
+    std::shared_ptr<Controller> ctrl = std::make_shared<Controller>(binaryFileName, employees, ok);
+    EXPECT_TRUE(ok);
+
+    std::shared_ptr<CRITICAL_SECTION> iocs = std::make_shared<CRITICAL_SECTION>();
+
+    std::size_t id = 1;
+    std::size_t numberOfClients = 5;
+    std::size_t numberOfRecords = 7;
+
+    InitializeCriticalSection(iocs.get());
+
+    ClientHandlerArgs args(id, numberOfClients, numberOfRecords, ctrl, iocs);
+    EXPECT_EQ(args.getId(), id);
+    EXPECT_EQ(args.getNumberOfClients(), numberOfClients);
+    EXPECT_EQ(args.getNumberOfRecords(), numberOfRecords);
+    EXPECT_EQ(args.getController(), ctrl);
+    EXPECT_EQ(args.getCriticalSection(), iocs);
 }
