@@ -5,6 +5,7 @@
 #include <iostream>
 #include <windows.h>
 #include <sstream>
+#include <vector>
 #include "utility.h"
 #include "controller.h"
 #include "args.h"
@@ -152,20 +153,19 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
                         ExitThread(2);
                     }
 
-                    // marking record as not being read
-                    SetEvent(notBeingReadByClientEvent);
-
                     EnterCriticalSection(iocs);
                     std::cout << "Thread " << threadId << " has stopped reading record\n";
                     LeaveCriticalSection(iocs);
-
-                    CloseHandle(notBeingModifiedEvent);
-                    CloseHandle(notBeingReadByClientEvent);
                 }
                 else
                 {
                     WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
                 }
+
+                // marking record as not being read
+                SetEvent(notBeingReadByClientEvent);
+                CloseHandle(notBeingModifiedEvent);
+                CloseHandle(notBeingReadByClientEvent);
             }
             else
             {
@@ -202,6 +202,7 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
 
                 // waiting for all clients to stop reading record
                 WaitForMultipleObjects(numberOfClients, notBeingReadEvents, TRUE, INFINITE);
+                WaitForSingleObject(notBeingModifiedEvent, INFINITE);
 
                 // marking record as being modified
                 ResetEvent(notBeingModifiedEvent);
@@ -242,21 +243,20 @@ DWORD WINAPI InteractWithClientThread(LPVOID _args)
                     {
                         WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
                     }
-
-                    // marking record as not being modified
-                    SetEvent(notBeingModifiedEvent);
-
-                    CloseHandle(notBeingModifiedEvent);
-                    for (size_t i = 0; i < numberOfClients; ++i)
-                    {
-                        CloseHandle(notBeingReadEvents[i]);
-                    }
-                    delete[] notBeingReadEvents;
                 }
                 else
                 {
                     WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
                 }
+
+                // marking record as not being modified
+                SetEvent(notBeingModifiedEvent);
+                CloseHandle(notBeingModifiedEvent);
+                for (size_t i = 0; i < numberOfClients; ++i)
+                {
+                    CloseHandle(notBeingReadEvents[i]);
+                }
+                delete[] notBeingReadEvents;
             }
             else
             {
