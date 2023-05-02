@@ -18,8 +18,8 @@ public:
         std::size_t id, 
         std::size_t numberOfClients, 
         std::size_t numberOfRecords, 
-        std::shared_ptr<Controller> ctrl, 
-        std::shared_ptr<CRITICAL_SECTION> iocs);
+        const std::shared_ptr<Controller>& ctrl, 
+        const std::shared_ptr<CRITICAL_SECTION>& iocs);
     std::size_t getId() const;
     std::size_t getNumberOfClients() const;
     std::shared_ptr<Controller> getController() const;
