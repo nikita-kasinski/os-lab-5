@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <string>
 #include <fstream>
+#include <vector>
 #include "employee.h"
 
 class Model
@@ -23,7 +24,7 @@ public:
     Model(const std::string &binaryFileName);
 
     // fills binary file binaryFileName with records of employess
-    void writeBinaryFile(const Employee *employees, const std::size_t &size) const;
+    void writeBinaryFile(const std::vector<Employee> &employees) const;
 
     // retrieves record by recordId
     Employee readRecord(const std::size_t &recordId) const;

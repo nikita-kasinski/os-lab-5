@@ -381,7 +381,7 @@ int main()
 
     std::cout << "Modified binary file\n";
     std::vector<Employee> employeesFromModifiedFile = ctrl.getAllRecords();
-    Utility::printEmployees(std::cout, employeesRead);
+    Utility::printEmployees(std::cout, employeesFromModifiedFile);
 
     // freeing memory
     DeleteCriticalSection(iocs);

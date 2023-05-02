@@ -9,11 +9,11 @@ Model::Model(const std::string &binaryFileName)
     this->binaryFileName = binaryFileName;
 }
 
-void Model::writeBinaryFile(const Employee *employees, const std::size_t &size) const
+void Model::writeBinaryFile(const std::vector<Employee>& employees) const
 {
     std::fstream fout(binaryFileName.c_str(), std::ios::binary | std::ios::out);
     fout.seekp(0);
-    for (std::size_t i = 0; i < size; ++i)
+    for (std::size_t i = 0; i < employees.size(); ++i)
     {
         fout.write(reinterpret_cast<const char *>(&employees[i]), sizeof(Employee));
     }

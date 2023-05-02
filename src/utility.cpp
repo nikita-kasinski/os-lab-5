@@ -6,30 +6,30 @@
 #include <iomanip>
 #include "utility.h"
 
-bool Utility::hasEquals(const int *array, const std::size_t &size)
+bool Utility::hasEquals(const std::vector<int> &array)
 {
     std::set<int> distinctElements;
-    for (std::size_t i = 0; i < size; ++i)
+    for (std::size_t i = 0; i < array.size(); ++i)
     {
         distinctElements.insert(array[i]);
     }
-    return (distinctElements.size() != size);
+    return (distinctElements.size() != array.size());
 }
 
-int *Utility::extractIds(const Employee *employees, const std::size_t &size)
+std::vector<int> Utility::extractIds(const std::vector<Employee> &employees)
 {
-    int *ids = new int[size];
-    for (std::size_t i = 0; i < size; ++i)
+    std::vector<int> ids(employees.size());
+    for (std::size_t i = 0; i < employees.size(); ++i)
     {
         ids[i] = employees[i].id;
     }
     return ids;
 }
 
-void Utility::fillMap(std::map<int, std::size_t> &mapToFill, const Employee *employees, const std::size_t &size)
+void Utility::fillMap(std::map<int, std::size_t> &mapToFill, const std::vector<Employee> &employees)
 {
     mapToFill.clear();
-    for (std::size_t i = 0; i < size; ++i)
+    for (std::size_t i = 0; i < employees.size(); ++i)
     {
         mapToFill[employees[i].id] = i;
     }
@@ -81,7 +81,7 @@ size_t Utility::safeUnsignedIntegerInput(std::istream &in, std::ostream &out, co
     return static_cast<size_t>(tempAns);
 }
 
-void Utility::printEmployees(std::ostream &out, const Employee *array, const size_t &size)
+void Utility::printEmployees(std::ostream &out, const std::vector<Employee> &array)
 {
     // print header
     out
@@ -91,7 +91,7 @@ void Utility::printEmployees(std::ostream &out, const Employee *array, const siz
         << "\n";
 
     // print employees
-    for (size_t i = 0; i < size; ++i)
+    for (size_t i = 0; i < array.size(); ++i)
     {
         printEmployee(out, array[i]);
     }

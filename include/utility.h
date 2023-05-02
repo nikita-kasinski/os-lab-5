@@ -7,6 +7,7 @@
 #include <fstream>
 #include <string>
 #include <map>
+#include <vector>
 #include "employee.h"
 
 class Utility
@@ -19,13 +20,13 @@ private:
 
 public:
     // checks if the array has equal elements
-    static bool hasEquals(const int *array, const std::size_t &size);
+    static bool hasEquals(const std::vector<int>& array);
 
     // creates array of ids of given employees, returned array must be freed
-    static int *extractIds(const Employee *employees, const std::size_t &size);
+    static std::vector<int> extractIds(const std::vector<Employee>& employees);
 
     // maps Employee.id -> position in the binary file in mapToFill 
-    static void fillMap(std::map<int, std::size_t> &mapToFill, const Employee *employess, const std::size_t &size);
+    static void fillMap(std::map<int, std::size_t> &mapToFill, const std::vector<Employee>& employess);
 
     // reads employee from in, puts input prompts into out
     static Employee readEmployee(std::istream& in, std::ostream& out);
@@ -41,7 +42,7 @@ public:
         const std::string &inputFailedPrompt);
 
     // outputs employee array into out
-    static void printEmployees(std::ostream& out, const Employee* employees, const std::size_t& size);
+    static void printEmployees(std::ostream& out, const std::vector<Employee>& employees);
 
     static std::string getWriteEventName(const std::size_t& recordId);
 

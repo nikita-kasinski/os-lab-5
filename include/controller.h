@@ -7,6 +7,7 @@
 #include <fstream>
 #include <limits>
 #include <map>
+#include <vector>
 #include "employee.h"
 #include "model.h"
 
@@ -18,7 +19,7 @@ private:
 
 public:
     // contructs controller object to manage binary file filled with given array of employees
-    Controller(const std::string &binaryFileName, const Employee *employees, const std::size_t &size, bool &ok);
+    Controller(const std::string &binaryFileName, const std::vector<Employee>& employees, bool &ok);
 
     // gets record by given id and puts it into employee variable, returns false in case there is no employee under such id
     bool getRecord(const int &id, Employee &employee) const;
@@ -30,5 +31,5 @@ public:
     bool idToRecordId(const int& id, size_t& recordId) const;
 
     // get all records from a file. Array size is put into size. Array must be freed
-    Employee* getAllRecords(size_t& size) const;
+    std::vector<Employee> getAllRecords() const;
 };

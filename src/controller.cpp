@@ -7,22 +7,20 @@
 
 Controller::Controller(
     const std::string &binaryFileName,
-    const Employee *employees,
-    const std::size_t &size,
+    const std::vector<Employee>& employees,
     bool &ok)
     : model(binaryFileName)
 {
-    int *ids = Utility::extractIds(employees, size);
-    bool hasEq = Utility::hasEquals(ids, size);
-    delete[] ids;
-    if (hasEq)
+    std::vector<int> ids = Utility::extractIds(employees);
+    bool hasEquals = Utility::hasEquals(ids);
+    if (hasEquals)
     {
         ok = false; // as array has equal ids we exit process
         return;
     }
     ok = true;
-    Utility::fillMap(_idToRecordId, employees, size);
-    model.writeBinaryFile(employees, size);
+    Utility::fillMap(_idToRecordId, employees);
+    model.writeBinaryFile(employees);
 }
 
 bool Controller::getRecord(const int &id, Employee &employee) const
@@ -81,17 +79,16 @@ bool Controller::idToRecordId(const int& id, size_t& recordId) const
     }
 }
 
-Employee* Controller::getAllRecords(size_t& size) const
+std::vector<Employee> Controller::getAllRecords() const
 {
-    size = _idToRecordId.size();
-    Employee *array = new Employee[size];
+    std::vector<Employee> result(_idToRecordId.size());
 
     size_t i = 0;
     for (const auto& key_value : _idToRecordId)
     {
-        Controller::getRecord(key_value.first, array[i]);
+        Controller::getRecord(key_value.first, result[i]);
         ++i;
     }
     
-    return array;
+    return result;
 }
