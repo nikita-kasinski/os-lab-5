@@ -123,11 +123,15 @@ int main()
         threads[i] = CreateThread(NULL, 0, ClientHandler, (LPVOID *)(&args[i]), 0, &thread_id);
     }
 
+    std::cout << "Started client handlers\n";
+    
     // starting clients
     for (size_t i = 0; i < numberOfClients; ++i)
     {
         StartClient();
     }
+
+    std::cout << "Started clients\n";
 
     // waiting for all threads to exit. It is better to change INFINITE to some constant like 10 minutes
     WaitForMultipleObjects(numberOfClients, &threads.front(), TRUE, INFINITE);
