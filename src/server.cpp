@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <sstream>
 #include <vector>
+#include <memory>
 #include "utility.h"
 #include "controller.h"
 #include "args.h"
@@ -308,7 +309,7 @@ int main()
 
     // creating controller for binary file
     bool ok = false;
-    Controller ctrl(binaryFileName, employees, ok);
+    std::shared_ptr<Controller> ctrl = std::make_shared<Controller>(binaryFileName, employees, ok);
     if (!ok)
     {
         std::cerr << "Employees array has equal ids. Quit\n";
@@ -316,7 +317,7 @@ int main()
     }
 
     // printing binary file
-    std::vector<Employee> employeesFromUnmodifiedFile = ctrl.getAllRecords();
+    std::vector<Employee> employeesFromUnmodifiedFile = ctrl->getAllRecords();
     Utility::printEmployees(std::cout, employeesFromUnmodifiedFile);
 
     // retrieving number of clients
@@ -327,8 +328,8 @@ int main()
         "Value must be positive integer\n");
 
     // creating critical sections for safe output via stdout
-    CRITICAL_SECTION *iocs = new CRITICAL_SECTION;
-    InitializeCriticalSection(iocs);
+    std::shared_ptr<CRITICAL_SECTION> iocs = std::make_shared<CRITICAL_SECTION>();
+    InitializeCriticalSection(iocs.get());
 
     std::cout << "Initialized critical section\n";
 
@@ -365,7 +366,7 @@ int main()
         args[i].id = i;
         args[i].numberOfClients = numberOfClients;
         args[i].numberOfRecords = numberOfRecords;
-        args[i].ctrl = &ctrl;
+        args[i].ctrl = ctrl;
         args[i].iocs = iocs;
         threads[i] = CreateThread(NULL, 0, InteractWithClientThread, (LPVOID *)(&args[i]), 0, &thread_id);
     }
@@ -380,11 +381,11 @@ int main()
     WaitForMultipleObjects(numberOfClients, &threads.front(), TRUE, INFINITE);
 
     std::cout << "Modified binary file\n";
-    std::vector<Employee> employeesFromModifiedFile = ctrl.getAllRecords();
+    std::vector<Employee> employeesFromModifiedFile = ctrl->getAllRecords();
     Utility::printEmployees(std::cout, employeesFromModifiedFile);
 
     // freeing memory
-    DeleteCriticalSection(iocs);
+    DeleteCriticalSection(iocs.get());
     for (size_t i = 0; i < numberOfRecords; ++i)
     {
         for (size_t j = 0; j < numberOfClients; ++j)
