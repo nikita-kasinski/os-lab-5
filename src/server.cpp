@@ -295,12 +295,12 @@ int main()
     size_t numberOfRecords = employeesSize;
 
     // retrieving employees
-    Employee *employees = new Employee[employeesSize];
-    for (size_t i = 0; i < employeesSize; ++i)
+    std::vector<Employee> employees(employeesSize);
+    for (size_t i = 0; i < employees.size(); ++i)
     {
         employees[i] = Utility::readEmployee(std::cin, std::cout);
     }
-
+ 
     // retrieving binary file name
     std::string binaryFileName;
     std::cout << "Enter binary file name: ";
@@ -308,7 +308,7 @@ int main()
 
     // creating controller for binary file
     bool ok = false;
-    Controller ctrl(binaryFileName, employees, employeesSize, ok);
+    Controller ctrl(binaryFileName, employees, ok);
     if (!ok)
     {
         std::cerr << "Employees array has equal ids. Quit\n";
@@ -316,12 +316,8 @@ int main()
     }
 
     // printing binary file
-    {
-        size_t employeesFromFileSize;
-        Employee *employeesFromFile = ctrl.getAllRecords(employeesFromFileSize);
-        Utility::printEmployees(std::cout, employeesFromFile, employeesFromFileSize);
-        delete[] employeesFromFile;
-    }
+    std::vector<Employee> employeesFromUnmodifiedFile = ctrl.getAllRecords();
+    Utility::printEmployees(std::cout, employeesFromUnmodifiedFile);
 
     // retrieving number of clients
     size_t numberOfClients = Utility::safeUnsignedIntegerInput(
@@ -338,10 +334,10 @@ int main()
 
     // creating set of client events for every record
     // event will be set if record i is not read by client j
-    HANDLE **notReadEvents = new HANDLE *[numberOfRecords];
+    std::vector<std::vector<HANDLE>> notReadEvents(numberOfRecords);
     for (size_t i = 0; i < numberOfRecords; ++i)
     {
-        notReadEvents[i] = new HANDLE[numberOfClients];
+        notReadEvents[i].resize(numberOfClients);
         for (size_t j = 0; j < numberOfClients; ++j)
         {
             notReadEvents[i][j] = CreateEventA(NULL, TRUE, TRUE, Utility::getReadEventName(i, j).c_str());
@@ -352,8 +348,8 @@ int main()
 
     // creating write events for every record
     // The event is set when record is not being modified
-    HANDLE *notWriteEvents = new HANDLE[numberOfRecords];
-    for (size_t i = 0; i < numberOfRecords; ++i)
+    std::vector<HANDLE> notWriteEvents(numberOfRecords);
+    for (size_t i = 0; i < notWriteEvents.size(); ++i)
     {
         notWriteEvents[i] = CreateEventA(NULL, TRUE, TRUE, Utility::getWriteEventName(i).c_str());
     }
@@ -361,8 +357,8 @@ int main()
     std::cout << "Created write events\n";
 
     // starting client interaction
-    HANDLE *threads = new HANDLE[numberOfClients];
-    ThreadArgs *args = new ThreadArgs[numberOfClients];
+    std::vector<HANDLE> threads(numberOfClients);
+    std::vector<ThreadArgs> args(numberOfClients);
     for (size_t i = 0; i < numberOfClients; ++i)
     {
         DWORD thread_id;
@@ -381,18 +377,13 @@ int main()
     }
 
     // waiting for all threads to exit. It is better to change INFINITE to some constant like 10 minutes
-    WaitForMultipleObjects(numberOfClients, threads, TRUE, INFINITE);
+    WaitForMultipleObjects(numberOfClients, &threads.front(), TRUE, INFINITE);
 
-    {
-        std::cout << "Modified binary file\n";
-        size_t sizeRead;
-        Employee *employeesRead = ctrl.getAllRecords(sizeRead);
-        Utility::printEmployees(std::cout, employeesRead, sizeRead);
-        delete[] employeesRead;
-    }
+    std::cout << "Modified binary file\n";
+    std::vector<Employee> employeesFromModifiedFile = ctrl.getAllRecords();
+    Utility::printEmployees(std::cout, employeesRead);
 
     // freeing memory
-    delete[] args;
     DeleteCriticalSection(iocs);
     for (size_t i = 0; i < numberOfRecords; ++i)
     {
@@ -400,14 +391,10 @@ int main()
         {
             CloseHandle(notReadEvents[i][j]);
         }
-        delete[] notReadEvents[i];
     }
-    delete[] notReadEvents;
     for (size_t i = 0; i < numberOfClients; ++i)
     {
         CloseHandle(threads[i]);
     }
-    delete[] threads;
-    delete[] employees;
     return 0;
 }
