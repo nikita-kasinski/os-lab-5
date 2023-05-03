@@ -55,3 +55,18 @@ std::shared_ptr<HANDLE> SmartWinapi::make_shared_handle(HANDLE source)
 {
     return std::shared_ptr<HANDLE>(createHandle(source), HandleCloser());
 }
+
+template <typename SmartPtr>
+std::vector<HANDLE> SmartWinapi::unwrapSmartPointersHandleArray(const std::vector<SmartPtr> &array)
+{
+    std::vector<HANDLE> result(array.size());
+    for (std::size_t i = 0; i < array.size(); ++i)
+    {
+        result[i] = *array[i].get();
+    }
+    return result;
+}
+
+template std::vector<HANDLE> SmartWinapi::unwrapSmartPointersHandleArray(const std::vector<std::unique_ptr<HANDLE, HandleCloser>>&);
+
+template std::vector<HANDLE> SmartWinapi::unwrapSmartPointersHandleArray(const std::vector<std::shared_ptr<HANDLE>>&);
