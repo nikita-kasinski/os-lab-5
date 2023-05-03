@@ -2,30 +2,56 @@
 // Created by Nikita Kasinski
 //
 
+#include <iostream>
 #include "smart_winapi.h"
 
-void CriticalSectionDeleter::operator()(CRITICAL_SECTION *cs) const
+void SmartWinapi::CriticalSectionDeleter::operator()(CRITICAL_SECTION *cs) const
 {
     DeleteCriticalSection(cs);
+    std::cout << "Smart critical section was destructed\n";
     delete cs;
 }
 
-void HandleCloser::operator()(HANDLE *handle) const
+void SmartWinapi::HandleCloser::operator()(HANDLE *handle) const
 {
     CloseHandle(handle);
+    std::cout << "Smart handle was destructed\n";
     delete handle;
 }
 
-std::unique_ptr<CRITICAL_SECTION, CriticalSectionDeleter> make_unique_cs()
+CRITICAL_SECTION* SmartWinapi::createCriticalSection()
 {
     CRITICAL_SECTION *csPointer = new CRITICAL_SECTION;
     InitializeCriticalSection(csPointer);
-    return std::unique_ptr<CRITICAL_SECTION, CriticalSectionDeleter>(csPointer, CriticalSectionDeleter());
+    std::cout << "Smart critical section was initialized\n";
+    return csPointer;
 }
 
-std::unique_ptr<HANDLE, HandleCloser> make_unique_handle(HANDLE source)
+HANDLE *SmartWinapi::createHandle(HANDLE source)
 {
     HANDLE *handlePointer = new HANDLE;
     *handlePointer = source;
-    return std::unique_ptr<HANDLE, HandleCloser>(handlePointer, HandleCloser());
+    std::cout << "Smart handler was created\n";
+    return handlePointer;
+}
+
+std::unique_ptr<CRITICAL_SECTION, SmartWinapi::CriticalSectionDeleter> SmartWinapi::make_unique_cs()
+{
+    return std::unique_ptr<CRITICAL_SECTION, CriticalSectionDeleter>(createCriticalSection(), CriticalSectionDeleter());
+}
+
+std::unique_ptr<HANDLE, SmartWinapi::HandleCloser> SmartWinapi::make_unique_handle(HANDLE source)
+{
+    
+    return std::unique_ptr<HANDLE, HandleCloser>(createHandle(source), HandleCloser());
+}
+
+std::shared_ptr<CRITICAL_SECTION> SmartWinapi::make_shared_cs()
+{
+    return std::shared_ptr<CRITICAL_SECTION>(createCriticalSection(), CriticalSectionDeleter());
+}
+
+std::shared_ptr<HANDLE> SmartWinapi::make_shared_handle(HANDLE source)
+{
+    return std::shared_ptr<HANDLE>(createHandle(source), HandleCloser());
 }
