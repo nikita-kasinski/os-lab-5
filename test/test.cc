@@ -475,18 +475,36 @@ TEST(ClientHandlerArgs_ClientHandlerArgs, StandartFlow)
     std::shared_ptr<Controller> ctrl = std::make_shared<Controller>(binaryFileName, employees, ok);
     EXPECT_TRUE(ok);
 
-    std::shared_ptr<CRITICAL_SECTION> iocs = std::make_shared<CRITICAL_SECTION>();
-
     std::size_t id = 1;
     std::size_t numberOfClients = 5;
     std::size_t numberOfRecords = 7;
 
+    std::shared_ptr<CRITICAL_SECTION> iocs = std::make_shared<CRITICAL_SECTION>();
+    std::shared_ptr<CRITICAL_SECTION> acs = std::make_shared<CRITICAL_SECTION>();
+    std::shared_ptr<std::vector<std::size_t>> recordAccessReadCount = std::make_shared<std::vector<std::size_t>>(numberOfRecords, 0);
+
     InitializeCriticalSection(iocs.get());
 
-    ClientHandlerArgs args(id, numberOfClients, numberOfRecords, ctrl, iocs);
+    ClientHandlerArgs args(id, numberOfClients, numberOfRecords, recordAccessReadCount, ctrl, iocs, acs);
     EXPECT_EQ(args.getId(), id);
     EXPECT_EQ(args.getNumberOfClients(), numberOfClients);
     EXPECT_EQ(args.getNumberOfRecords(), numberOfRecords);
     EXPECT_EQ(args.getController(), ctrl);
-    EXPECT_EQ(args.getCriticalSection(), iocs);
+    EXPECT_EQ(args.getIOCriticalSection(), iocs);
+    EXPECT_EQ(args.getArrayCriticalSection(), acs);
+    EXPECT_EQ(args.getRecordAccessReadCount(), recordAccessReadCount);
+}
+
+TEST(Utility_getAccessMutexName, StandartFlow)
+{
+    std::string expectedEventName = "Record access mutex 5";
+    EXPECT_EQ(expectedEventName, Utility::getAccessMutexName(5));
+}
+
+TEST(ClientHandlerArgs, DefaultConstructor)
+{
+    ClientHandlerArgs args;
+    EXPECT_EQ(args.getId(), 0);
+    EXPECT_EQ(args.getNumberOfClients(), 0);
+    EXPECT_EQ(args.getNumberOfRecords(), 0);
 }
