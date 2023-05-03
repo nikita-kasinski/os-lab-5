@@ -83,16 +83,24 @@ int main()
         "Enter number of clients: ",
         "Value must be positive integer\n");
 
-    // creating critical sections for safe output via stdout
+    // creating critical section for safe output via stdout
     std::shared_ptr<CRITICAL_SECTION> iocs = std::make_shared<CRITICAL_SECTION>();
     InitializeCriticalSection(iocs.get());
 
-    std::cout << "Initialized critical section\n";
+    std::cout << "Initialized io critical section\n";
+
+    std::shared_ptr<std::vector<std::size_t>> recordAccessReadCount = std::make_shared<std::vector<std::size_t>>(numberOfRecords, 0);
+
+    // creating critical section for safe access to recordAccessReadCount array
+    std::shared_ptr<CRITICAL_SECTION> acs = std::make_shared<CRITICAL_SECTION>();
+    InitializeCriticalSection(acs.get());
+
+    std::cout << "Initialized beingReadCount array\n";
 
     // creating set of client events for every record
     // event will be set if record i is not read by client j
     std::vector<std::vector<HANDLE>> notReadEvents(numberOfRecords);
-    for (size_t i = 0; i < numberOfRecords; ++i)
+    for (std::size_t i = 0; i < numberOfRecords; ++i)
     {
         notReadEvents[i].resize(numberOfClients);
         for (size_t j = 0; j < numberOfClients; ++j)
@@ -102,6 +110,12 @@ int main()
     }
 
     std::cout << "Created read events\n";
+
+    std::vector<HANDLE> recordAccess(numberOfRecords);
+    for (std::size_t i = 0; i < recordAccess.size(); ++i)
+    {
+        recordAccess[i] = CreateMutexA(NULL, FALSE, Utility::getAccessMutexName(i).c_str());
+    }
 
     // creating write events for every record
     // The event is set when record is not being modified
@@ -119,7 +133,7 @@ int main()
     for (size_t i = 0; i < numberOfClients; ++i)
     {
         DWORD thread_id;
-        args[i] = ClientHandlerArgs(i, numberOfClients, numberOfRecords, ctrl, iocs);
+        args[i] = ClientHandlerArgs(i, numberOfClients, numberOfRecords, recordAccessReadCount, ctrl, iocs, acs);
         threads[i] = CreateThread(NULL, 0, ClientHandler, (LPVOID *)(&args[i]), 0, &thread_id);
     }
 
@@ -142,6 +156,7 @@ int main()
 
     // closing handles
     DeleteCriticalSection(iocs.get());
+    DeleteCriticalSection(acs.get());
     for (size_t i = 0; i < numberOfRecords; ++i)
     {
         for (size_t j = 0; j < numberOfClients; ++j)
