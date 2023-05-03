@@ -1,3 +1,7 @@
+//
+// Created by Nikita Kasinski
+//
+
 #pragma once
 
 class Protocol

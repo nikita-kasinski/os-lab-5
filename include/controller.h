@@ -1,9 +1,8 @@
-#pragma once
-
 //
 // Created by Nikita Kasinski
 //
 
+#pragma once
 #include <fstream>
 #include <limits>
 #include <map>

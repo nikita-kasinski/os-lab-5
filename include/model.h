@@ -1,9 +1,8 @@
-#pragma once
-
 //
 // Created by Nikita Kasinski
 //
 
+#pragma once
 #include <map>
 #include <cstdlib>
 #include <string>

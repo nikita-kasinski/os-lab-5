@@ -1,10 +1,14 @@
+//
+// Created by Nikita Kasinski
+//
+
 #pragma once
 #include <cstdlib>
 #include <windows.h>
 #include <memory>
 #include "controller.h"
 
-// data class for providing thread function with arguments
+// data class for providing thread function ClientHandler with arguments
 class ClientHandlerArgs
 {
 private:
