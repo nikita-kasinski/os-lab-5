@@ -18,6 +18,7 @@ private:
     std::shared_ptr<Controller> _ctrl;
     std::shared_ptr<CRITICAL_SECTION> _iocs;
 public:
+    ClientHandlerArgs();
     ClientHandlerArgs(
         std::size_t id, 
         std::size_t numberOfClients, 

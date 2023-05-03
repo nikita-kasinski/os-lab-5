@@ -4,6 +4,15 @@
 
 #include "args.h"
 
+ClientHandlerArgs::ClientHandlerArgs()
+{
+    _id = 0;
+    _numberOfClients = 0;
+    _numberOfRecords = 0;
+    _ctrl = std::shared_ptr<Controller>();
+    _iocs = std::shared_ptr<CRITICAL_SECTION>();
+}
+
 ClientHandlerArgs::ClientHandlerArgs(
     std::size_t id,
     std::size_t numberOfClients,
