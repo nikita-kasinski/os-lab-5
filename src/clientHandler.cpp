@@ -84,8 +84,6 @@ DWORD WINAPI ClientHandler(LPVOID _args)
 
             if (keyExists)
             {
-                HANDLE notBeingModifiedEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, Utility::getWriteEventName(recordId).c_str());
-                HANDLE notBeingReadByClientEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, Utility::getReadEventName(recordId, threadId).c_str());
                 HANDLE recordAccess = OpenMutexA(MUTEX_ALL_ACCESS, FALSE, Utility::getAccessMutexName(recordId).c_str());
 
                 EnterCriticalSection(iocs.get());
@@ -99,15 +97,11 @@ DWORD WINAPI ClientHandler(LPVOID _args)
                     WaitForSingleObject(recordAccess, INFINITE); // waiting for record to become available
                 }
                 ++recordAccessReadCount->at(recordId);
-                //std::cout << "Thread " << threadId << "entered record. RecordIdCount: " << recordAccessReadCount->at(recordId) << "\n";
                 LeaveCriticalSection(acs.get());
 
                 EnterCriticalSection(iocs.get());
                 std::cout << "Thread " << threadId << " access granted\n";
                 LeaveCriticalSection(iocs.get());
-
-                //// marking record as being read
-                // ResetEvent(notBeingReadByClientEvent);
 
                 // reading record and sending to client
                 Employee employeeRead;
@@ -147,10 +141,6 @@ DWORD WINAPI ClientHandler(LPVOID _args)
                     WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
                 }
 
-                // marking record as not being read
-                CloseHandle(notBeingModifiedEvent);
-                CloseHandle(notBeingReadByClientEvent);
-
                 EnterCriticalSection(acs.get());
                 --recordAccessReadCount->at(recordId);
                 if (recordAccessReadCount->at(recordId) == 0)
@@ -158,7 +148,6 @@ DWORD WINAPI ClientHandler(LPVOID _args)
                     // no one is reading the record anymore
                     ReleaseMutex(recordAccess);
                 }
-                //std::cout << "Thread " << threadId << " left record. RecordIdCount: " << recordAccessReadCount->at(recordId) << "\n";
                 LeaveCriticalSection(acs.get());
             }
             else
@@ -182,27 +171,14 @@ DWORD WINAPI ClientHandler(LPVOID _args)
             {
                 // record exists
 
-                // opening events
-                HANDLE notBeingModifiedEvent = OpenEventA(EVENT_ALL_ACCESS, FALSE, Utility::getWriteEventName(recordId).c_str());
-                HANDLE *notBeingReadEvents = new HANDLE[numberOfClients];
-                for (size_t i = 0; i < numberOfClients; ++i)
-                {
-                    notBeingReadEvents[i] = OpenEventA(EVENT_ALL_ACCESS, FALSE, Utility::getReadEventName(recordId, i).c_str());
-                }
-
                 HANDLE recordAccess = OpenMutexA(MUTEX_ALL_ACCESS, FALSE, Utility::getAccessMutexName(recordId).c_str());
 
                 EnterCriticalSection(iocs.get());
                 std::cout << "Thread " << threadId << " is waiting for record " << recordId << " to become available for modifying\n";
                 LeaveCriticalSection(iocs.get());
 
-                // waiting for all clients to stop reading record
-                //WaitForMultipleObjects(numberOfClients, notBeingReadEvents, TRUE, INFINITE);
-                //WaitForSingleObject(notBeingModifiedEvent, INFINITE);
-
-                // marking record as being modified
+                // waiting for record access
                 WaitForSingleObject(recordAccess, INFINITE);
-                //ResetEvent(notBeingModifiedEvent);
 
                 EnterCriticalSection(iocs.get());
                 std::cout << "Thread " << threadId << " access granted\n";
@@ -249,12 +225,6 @@ DWORD WINAPI ClientHandler(LPVOID _args)
 
                 // marking record as not being modified
                 ReleaseMutex(recordAccess);
-                CloseHandle(notBeingModifiedEvent);
-                for (size_t i = 0; i < numberOfClients; ++i)
-                {
-                    CloseHandle(notBeingReadEvents[i]);
-                }
-                delete[] notBeingReadEvents;
             }
             else
             {

@@ -95,37 +95,13 @@ int main()
     std::shared_ptr<CRITICAL_SECTION> acs = std::make_shared<CRITICAL_SECTION>();
     InitializeCriticalSection(acs.get());
 
-    std::cout << "Initialized beingReadCount array\n";
-
-    // creating set of client events for every record
-    // event will be set if record i is not read by client j
-    std::vector<std::vector<HANDLE>> notReadEvents(numberOfRecords);
-    for (std::size_t i = 0; i < numberOfRecords; ++i)
-    {
-        notReadEvents[i].resize(numberOfClients);
-        for (size_t j = 0; j < numberOfClients; ++j)
-        {
-            notReadEvents[i][j] = CreateEventA(NULL, TRUE, TRUE, Utility::getReadEventName(i, j).c_str());
-        }
-    }
-
-    std::cout << "Created read events\n";
+    std::cout << "Initialized recordAccessReadCount array\n";
 
     std::vector<HANDLE> recordAccess(numberOfRecords);
     for (std::size_t i = 0; i < recordAccess.size(); ++i)
     {
         recordAccess[i] = CreateMutexA(NULL, FALSE, Utility::getAccessMutexName(i).c_str());
     }
-
-    // creating write events for every record
-    // The event is set when record is not being modified
-    std::vector<HANDLE> notWriteEvents(numberOfRecords);
-    for (size_t i = 0; i < notWriteEvents.size(); ++i)
-    {
-        notWriteEvents[i] = CreateEventA(NULL, TRUE, TRUE, Utility::getWriteEventName(i).c_str());
-    }
-
-    std::cout << "Created write events\n";
 
     // starting client interaction
     std::vector<HANDLE> threads(numberOfClients);
@@ -157,13 +133,6 @@ int main()
     // closing handles
     DeleteCriticalSection(iocs.get());
     DeleteCriticalSection(acs.get());
-    for (size_t i = 0; i < numberOfRecords; ++i)
-    {
-        for (size_t j = 0; j < numberOfClients; ++j)
-        {
-            CloseHandle(notReadEvents[i][j]);
-        }
-    }
     for (size_t i = 0; i < numberOfClients; ++i)
     {
         CloseHandle(threads[i]);
