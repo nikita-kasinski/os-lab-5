@@ -103,6 +103,8 @@ int main()
         recordAccess[i] = CreateMutexA(NULL, FALSE, Utility::getAccessMutexName(i).c_str());
     }
 
+    std::cout << "Created access mutexes\n";
+    
     // starting client interaction
     std::vector<HANDLE> threads(numberOfClients);
     std::vector<ClientHandlerArgs> args(numberOfClients);
