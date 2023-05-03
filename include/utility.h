@@ -48,4 +48,6 @@ public:
 
     static std::string getReadEventName(const std::size_t& recordId, const std::size_t& clientId);
 
+    static std::string getAccessMutexName(const std::size_t& recordId);
+
 };

@@ -112,3 +112,11 @@ std::string Utility::getWriteEventName(const std::size_t &recordId)
     eventName << eventNameTemplate << ' ' << recordId;
     return eventName.str();
 }
+
+std::string Utility::getAccessMutexName(const std::size_t &recordId)
+{
+    std::string baseMutexName = "Record access mutex";
+    std::ostringstream accessMutexName;
+    accessMutexName << baseMutexName << ' ' << recordId;
+    return accessMutexName.str();
+}
