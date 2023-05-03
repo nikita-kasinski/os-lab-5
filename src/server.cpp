@@ -12,6 +12,7 @@
 #include "args.h"
 #include "protocol.h"
 #include "clientHandler.h"
+#include "smart_winapi.h"
 
 BOOL StartClient()
 {
@@ -84,35 +85,33 @@ int main()
         "Value must be positive integer\n");
 
     // creating critical section for safe output via stdout
-    std::shared_ptr<CRITICAL_SECTION> iocs = std::make_shared<CRITICAL_SECTION>();
-    InitializeCriticalSection(iocs.get());
+    auto iocs = SmartWinapi::make_shared_cs();
 
     std::cout << "Initialized io critical section\n";
 
     std::shared_ptr<std::vector<std::size_t>> recordAccessReadCount = std::make_shared<std::vector<std::size_t>>(numberOfRecords, 0);
 
     // creating critical section for safe access to recordAccessReadCount array
-    std::shared_ptr<CRITICAL_SECTION> acs = std::make_shared<CRITICAL_SECTION>();
-    InitializeCriticalSection(acs.get());
+    auto acs = SmartWinapi::make_shared_cs();
 
     std::cout << "Initialized recordAccessReadCount array\n";
 
-    std::vector<HANDLE> recordAccess(numberOfRecords);
+    std::vector<std::unique_ptr<HANDLE, SmartWinapi::HandleCloser>> recordAccess(numberOfRecords);
     for (std::size_t i = 0; i < recordAccess.size(); ++i)
     {
-        recordAccess[i] = CreateMutexA(NULL, FALSE, Utility::getAccessMutexName(i).c_str());
+        recordAccess[i] = SmartWinapi::make_unique_handle(CreateMutexA(NULL, FALSE, Utility::getAccessMutexName(i).c_str()));
     }
 
     std::cout << "Created access mutexes\n";
     
     // starting client interaction
-    std::vector<HANDLE> threads(numberOfClients);
+    std::vector<std::unique_ptr<HANDLE, SmartWinapi::HandleCloser>> clientHandlers(numberOfClients);
     std::vector<ClientHandlerArgs> args(numberOfClients);
     for (size_t i = 0; i < numberOfClients; ++i)
     {
         DWORD thread_id;
         args[i] = ClientHandlerArgs(i, numberOfClients, numberOfRecords, recordAccessReadCount, ctrl, iocs, acs);
-        threads[i] = CreateThread(NULL, 0, ClientHandler, (LPVOID *)(&args[i]), 0, &thread_id);
+        clientHandlers[i] = SmartWinapi::make_unique_handle(CreateThread(NULL, 0, ClientHandler, (LPVOID *)(&args[i]), 0, &thread_id));
     }
 
     std::cout << "Started client handlers\n";
@@ -126,18 +125,11 @@ int main()
     std::cout << "Started clients\n";
 
     // waiting for all threads to exit. It is better to change INFINITE to some constant like 10 minutes
-    WaitForMultipleObjects(numberOfClients, &threads.front(), TRUE, INFINITE);
+    std::vector<HANDLE> unwrappedHandles = SmartWinapi::unwrapSmartPointersHandleArray(clientHandlers);
+    WaitForMultipleObjects(numberOfClients, &unwrappedHandles.front(), TRUE, INFINITE);
 
     std::cout << "Modified binary file\n";
     std::vector<Employee> employeesFromModifiedFile = ctrl->getAllRecords();
     Utility::printEmployees(std::cout, employeesFromModifiedFile);
-
-    // closing handles
-    DeleteCriticalSection(iocs.get());
-    DeleteCriticalSection(acs.get());
-    for (size_t i = 0; i < numberOfClients; ++i)
-    {
-        CloseHandle(threads[i]);
-    }
     return 0;
 }
