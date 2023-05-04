@@ -70,3 +70,8 @@ std::vector<HANDLE> SmartWinapi::unwrapSmartPointersHandleArray(const std::vecto
 template std::vector<HANDLE> SmartWinapi::unwrapSmartPointersHandleArray(const std::vector<std::unique_ptr<HANDLE, HandleCloser>>&);
 
 template std::vector<HANDLE> SmartWinapi::unwrapSmartPointersHandleArray(const std::vector<std::shared_ptr<HANDLE>>&);
+
+HANDLE SmartWinapi::unwrap(const std::shared_ptr<HANDLE> &source)
+{
+    return *source.get();
+}
