@@ -10,6 +10,7 @@
 #include "utility.h"
 #include "protocol.h"
 #include "concurrent_writer.h"
+#include "smart_winapi.h"
 
 DWORD WINAPI ClientHandler(LPVOID _args)
 {
@@ -27,7 +28,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
     ConcurrentWriter writer(iocs, std::cout);
 
     // creating named pipe
-    HANDLE pipe = CreateNamedPipeA(
+    std::shared_ptr<HANDLE> pipe = SmartWinapi::make_shared_handle(CreateNamedPipeA(
         pipeName.c_str(),
         PIPE_ACCESS_DUPLEX,
         PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
@@ -35,18 +36,17 @@ DWORD WINAPI ClientHandler(LPVOID _args)
         0,
         0,
         INFINITE,
-        NULL);
+        NULL));
 
-    if (pipe == INVALID_HANDLE_VALUE)
+    if (SmartWinapi::unwrap(pipe) == INVALID_HANDLE_VALUE)
     {
         // pipe didn't open
         writer.write("Thread ", threadId, " cannot open a pipe: ", GetLastError(), "\n");
         return 2;
     }
 
-    if (!ConnectNamedPipe(pipe, NULL))
+    if (!ConnectNamedPipe(SmartWinapi::unwrap(pipe), NULL))
     {
-        CloseHandle(pipe);
         writer.write("Thread ", threadId, ". Connection error: ", GetLastError(), "\n");
         return 3;
     }
@@ -58,11 +58,11 @@ DWORD WINAPI ClientHandler(LPVOID _args)
 
         writer.write("Thread ", threadId, " is working\n");
 
-        ReadFile(pipe, &request, sizeof(char), &bytes, NULL);
+        ReadFile(SmartWinapi::unwrap(pipe), &request, sizeof(char), &bytes, NULL);
 
         if (Protocol::QUIT == request)
         {
-            DisconnectNamedPipe(pipe);
+            DisconnectNamedPipe(SmartWinapi::unwrap(pipe));
             break;
         }
         else if (Protocol::READ == request)
@@ -70,7 +70,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
             // reading record
 
             int key; // employee id
-            ReadFile(pipe, reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
+            ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
 
             writer.write("Thread ", threadId, " received key to read: ", key, "\n");
 
@@ -101,15 +101,15 @@ DWORD WINAPI ClientHandler(LPVOID _args)
 
                     writer.write("Thread ", threadId, " has read employee and has sent it\n");
 
-                    WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
-                    WriteFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                    WriteFile(SmartWinapi::unwrap(pipe), &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
+                    WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
                     char response;
 
                     // waiting for client to finish access to record
                     writer.write("Thread ", threadId, " is waiting for client to stop reading record\n");
 
-                    ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+                    ReadFile(SmartWinapi::unwrap(pipe), &response, Protocol::SIZE, &bytes, NULL);
 
                     if (Protocol::FINISH != response)
                     {
@@ -121,7 +121,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
                 }
                 else
                 {
-                    WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+                    WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
                 }
 
                 EnterCriticalSection(acs.get());
@@ -135,7 +135,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
             }
             else
             {
-                WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+                WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
             }
         }
         else if (Protocol::MODIFY == request)
@@ -144,7 +144,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
 
             // reading key
             int key;
-            ReadFile(pipe, reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
+            ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
 
             // trying to get recordId by id
             size_t recordId;
@@ -164,7 +164,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
                 writer.write("Thread ", threadId, " access granted\n");
 
                 // writing success response
-                WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
+                WriteFile(SmartWinapi::unwrap(pipe), &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
 
                 // reading record
                 Employee employeeRead;
@@ -172,17 +172,17 @@ DWORD WINAPI ClientHandler(LPVOID _args)
                 {
 
                     // writing record
-                    WriteFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                    WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
                     // reading new record
-                    ReadFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                    ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
                     if (ctrl->setRecord(key, employeeRead))
                     {
-                        WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
+                        WriteFile(SmartWinapi::unwrap(pipe), &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
 
                         char response;
-                        ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+                        ReadFile(SmartWinapi::unwrap(pipe), &response, Protocol::SIZE, &bytes, NULL);
 
                         if (Protocol::FINISH != response)
                         {
@@ -192,12 +192,12 @@ DWORD WINAPI ClientHandler(LPVOID _args)
                     }
                     else
                     {
-                        WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+                        WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
                     }
                 }
                 else
                 {
-                    WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+                    WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
                 }
 
                 // marking record as not being modified
@@ -206,7 +206,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
             else
             {
                 // writing failure response
-                WriteFile(pipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+                WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
             }
         }
         else
@@ -218,8 +218,6 @@ DWORD WINAPI ClientHandler(LPVOID _args)
     }
 
     writer.write("Thread ", threadId, " ended\n");
-
-    CloseHandle(pipe);
 
     return 0;
 }
