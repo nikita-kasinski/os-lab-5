@@ -9,6 +9,7 @@ ClientHandlerArgs::ClientHandlerArgs()
     _id = 0;
     _numberOfClients = 0;
     _numberOfRecords = 0;
+    _recordAccessReadCount = std::shared_ptr<std::vector<std::size_t>>();
     _ctrl = std::shared_ptr<Controller>();
     _iocs = std::shared_ptr<CRITICAL_SECTION>();
     _acs = std::shared_ptr<CRITICAL_SECTION>();
