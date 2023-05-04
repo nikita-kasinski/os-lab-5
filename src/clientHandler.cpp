@@ -9,6 +9,7 @@
 #include "controller.h"
 #include "utility.h"
 #include "protocol.h"
+#include "concurrent_writer.h"
 
 DWORD WINAPI ClientHandler(LPVOID _args)
 {
@@ -22,6 +23,8 @@ DWORD WINAPI ClientHandler(LPVOID _args)
     std::shared_ptr<Controller> ctrl = args.getController();
     std::shared_ptr<CRITICAL_SECTION> iocs = args.getIOCriticalSection();
     std::shared_ptr<CRITICAL_SECTION> acs = args.getArrayCriticalSection();
+
+    ConcurrentWriter writer(iocs, std::cout);
 
     // creating named pipe
     HANDLE pipe = CreateNamedPipeA(
@@ -37,18 +40,14 @@ DWORD WINAPI ClientHandler(LPVOID _args)
     if (pipe == INVALID_HANDLE_VALUE)
     {
         // pipe didn't open
-        EnterCriticalSection(iocs.get());
-        std::cerr << "Thread " << threadId << " cannot open a pipe: " << GetLastError() << "\n";
-        LeaveCriticalSection(iocs.get());
+        writer.write("Thread ", threadId, " cannot open a pipe: ", GetLastError(), "\n");
         return 2;
     }
 
     if (!ConnectNamedPipe(pipe, NULL))
     {
         CloseHandle(pipe);
-        EnterCriticalSection(iocs.get());
-        std::cerr << "Thread " << threadId << ". Connection error: " << GetLastError() << "\n";
-        LeaveCriticalSection(iocs.get());
+        writer.write("Thread ", threadId, ". Connection error: ", GetLastError(), "\n");
         return 3;
     }
 
@@ -57,9 +56,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
         DWORD bytes;
         char request;
 
-        EnterCriticalSection(iocs.get());
-        std::cout << "Thread " << threadId << " is working\n";
-        LeaveCriticalSection(iocs.get());
+        writer.write("Thread ", threadId, " is working\n");
 
         ReadFile(pipe, &request, sizeof(char), &bytes, NULL);
 
@@ -75,9 +72,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
             int key; // employee id
             ReadFile(pipe, reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
 
-            EnterCriticalSection(iocs.get());
-            std::cout << "Thread " << threadId << " received key to read: " << key << "\n";
-            LeaveCriticalSection(iocs.get());
+            writer.write("Thread ", threadId, " received key to read: ", key, "\n");
 
             size_t recordId;
             bool keyExists = ctrl->idToRecordId(key, recordId); // record id
@@ -86,9 +81,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
             {
                 HANDLE recordAccess = OpenMutexA(MUTEX_ALL_ACCESS, FALSE, Utility::getAccessMutexName(recordId).c_str());
 
-                EnterCriticalSection(iocs.get());
-                std::cout << "Thread " << threadId << " is waiting for record with key " << key << " to become available\n";
-                LeaveCriticalSection(iocs.get());
+                writer.write("Thread ", threadId, " is waiting for record with key ", key, " to become available\n");
 
                 EnterCriticalSection(acs.get());
                 if (recordAccessReadCount->at(recordId) == 0)
@@ -99,18 +92,14 @@ DWORD WINAPI ClientHandler(LPVOID _args)
                 ++recordAccessReadCount->at(recordId);
                 LeaveCriticalSection(acs.get());
 
-                EnterCriticalSection(iocs.get());
-                std::cout << "Thread " << threadId << " access granted\n";
-                LeaveCriticalSection(iocs.get());
+                writer.write("Thread ", threadId, " access granted\n");
 
                 // reading record and sending to client
                 Employee employeeRead;
                 if (ctrl->getRecord(key, employeeRead))
                 {
 
-                    EnterCriticalSection(iocs.get());
-                    std::cout << "Thread " << threadId << " has read employee and has sent it\n";
-                    LeaveCriticalSection(iocs.get());
+                    writer.write("Thread ", threadId, " has read employee and has sent it\n");
 
                     WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
                     WriteFile(pipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
@@ -118,23 +107,17 @@ DWORD WINAPI ClientHandler(LPVOID _args)
                     char response;
 
                     // waiting for client to finish access to record
-                    EnterCriticalSection(iocs.get());
-                    std::cout << "Thread " << threadId << " is waiting for client to stop reading record\n";
-                    LeaveCriticalSection(iocs.get());
+                    writer.write("Thread ", threadId, " is waiting for client to stop reading record\n");
 
                     ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
 
                     if (Protocol::FINISH != response)
                     {
-                        EnterCriticalSection(iocs.get());
-                        std::cerr << "Protocol violation on stopping reading a record\n. Exit thread";
-                        LeaveCriticalSection(iocs.get());
+                        writer.write("Protocol violation on stopping reading a record\n. Exit thread");
                         ExitThread(2);
                     }
 
-                    EnterCriticalSection(iocs.get());
-                    std::cout << "Thread " << threadId << " has stopped reading record\n";
-                    LeaveCriticalSection(iocs.get());
+                    writer.write("Thread ", threadId, " has stopped reading record\n");
                 }
                 else
                 {
@@ -173,16 +156,12 @@ DWORD WINAPI ClientHandler(LPVOID _args)
 
                 HANDLE recordAccess = OpenMutexA(MUTEX_ALL_ACCESS, FALSE, Utility::getAccessMutexName(recordId).c_str());
 
-                EnterCriticalSection(iocs.get());
-                std::cout << "Thread " << threadId << " is waiting for record " << recordId << " to become available for modifying\n";
-                LeaveCriticalSection(iocs.get());
+                writer.write("Thread ", threadId, " is waiting for record ", recordId, " to become available for modifying\n");
 
                 // waiting for record access
                 WaitForSingleObject(recordAccess, INFINITE);
 
-                EnterCriticalSection(iocs.get());
-                std::cout << "Thread " << threadId << " access granted\n";
-                LeaveCriticalSection(iocs.get());
+                writer.write("Thread ", threadId, " access granted\n");
 
                 // writing success response
                 WriteFile(pipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
@@ -207,9 +186,7 @@ DWORD WINAPI ClientHandler(LPVOID _args)
 
                         if (Protocol::FINISH != response)
                         {
-                            EnterCriticalSection(iocs.get());
-                            std::cout << "Thread " << threadId << " protocol violation. Abort\n";
-                            LeaveCriticalSection(iocs.get());
+                            writer.write("Thread ", threadId, " protocol violation. Abort\n");
                             ExitThread(4);
                         }
                     }
@@ -234,17 +211,13 @@ DWORD WINAPI ClientHandler(LPVOID _args)
         }
         else
         {
-            EnterCriticalSection(iocs.get());
-            std::cerr << "Protocol violation. Exit thread\n";
-            LeaveCriticalSection(iocs.get());
-
+            
+            writer.write("Protocol violation. Exit thread\n");
             ExitThread(3);
         }
     }
 
-    EnterCriticalSection(iocs.get());
-    std::cout << "Thread " << threadId << " ended\n";
-    LeaveCriticalSection(iocs.get());
+    writer.write("Thread ", threadId, " ended\n");
 
     CloseHandle(pipe);
 
