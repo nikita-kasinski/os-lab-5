@@ -3,7 +3,7 @@ EXECS = bin/server.exe
 EXECT = bin/test.exe
 objC = obj/client.o
 objS = obj/server.o
-obj = obj/utility.o obj/model.o obj/controller.o obj/employee.o obj/args.o obj/clientHandler.o obj/smart_winapi.o
+obj = obj/utility.o obj/model.o obj/controller.o obj/employee.o obj/args.o obj/clientHandler.o obj/smart_winapi.o obj/concurrent_writer.o
 objT = obj/test.o obj/tutility.o obj/tmodel.o obj/tcontroller.o obj/temployee.o obj/targs.o
 CC = g++
 CPPFLAGS = -std=c++17 -Wall -Iinclude
