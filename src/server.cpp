@@ -11,7 +11,7 @@
 #include "controller.h"
 #include "args.h"
 #include "protocol.h"
-#include "clientHandler.h"
+#include "client_handler.h"
 #include "smart_winapi.h"
 
 BOOL StartClient()
