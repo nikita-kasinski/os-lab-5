@@ -11,7 +11,9 @@ class MenuOption
 {
 public:
     MenuOption(const std::shared_ptr<Menu> &menu);
-    [[nodiscard]] virtual ResultCode execute() const = 0;
+
+    [[nodiscard]] virtual ResultCode execute() = 0;
+
     virtual bool isQuitOption() const = 0;
 
 protected:
@@ -25,7 +27,9 @@ public:
 
 protected:
     Menu();
-    virtual std::expected<std::shared_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) = 0;
+
+    virtual std::expected<std::shared_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const = 0;
+
     [[nodiscard]] virtual ResultCode initializeOption() = 0;
 
     std::unique_ptr<MenuOption> _option;
