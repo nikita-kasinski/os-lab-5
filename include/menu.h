@@ -10,6 +10,8 @@
 class MenuOption
 {
 public:
+    MenuOption();
+    
     MenuOption(const std::shared_ptr<Menu> &menu);
 
     [[nodiscard]] virtual ResultCode execute() = 0;
