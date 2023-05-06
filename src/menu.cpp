@@ -5,6 +5,11 @@
 #include "menu.h"
 #include "result_codes.h"
 
+ResultCode MenuOption::execute() const
+{
+    return ResultCode::OK;
+}
+
 Menu::Menu()
 {
     _option = std::unique_ptr<MenuOption>();
