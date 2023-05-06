@@ -3,20 +3,22 @@
 //
 
 #include "menu.h"
+#include "result_codes.h"
 
-int Menu::start()
+ResultCode Menu::start()
 {
     bool started = false;
     while (not started or not option->isQuitOption())
     {
         started = true;
 
-        int initializeResult = initializeOption();
-        if (initializeResult != 0)
+        ResultCode initializeResult = initializeOption();
+        if (ResultCode::OK != initializeResult)
             return initializeResult;
         
-        int executeResult = option->execute();
-        if (executeResult != 0)
+        ResultCode executeResult = option->execute();
+        if (ResultCode::OK != executeResult)
             return executeResult;
     }
+    return ResultCode::OK;
 }
