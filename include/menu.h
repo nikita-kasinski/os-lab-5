@@ -30,7 +30,7 @@ public:
 protected:
     Menu();
 
-    virtual std::expected<std::shared_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const = 0;
+    virtual std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const = 0;
 
     [[nodiscard]] virtual ResultCode initializeOption() = 0;
 

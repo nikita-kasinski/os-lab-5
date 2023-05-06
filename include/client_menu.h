@@ -13,7 +13,7 @@ public:
     ClientOptionQuit(const std::shared_ptr<Menu> &menu);
 
     [[nodiscard]] ResultCode execute() override;
-    
+
     bool isQuitOption() const override;
 
 private:
@@ -29,7 +29,7 @@ public:
     [[nodiscard]] ResultCode start() override;
 
 private:
-    virtual std::expected<std::shared_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
+    virtual std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
 
     [[nodiscard]] ResultCode initializeOption() override;
 

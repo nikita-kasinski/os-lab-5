@@ -21,6 +21,7 @@ Menu::Menu()
 {
     _option = std::unique_ptr<MenuOption>();
 }
+
 ResultCode Menu::start()
 {
     bool started = false;
