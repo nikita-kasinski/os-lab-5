@@ -7,21 +7,32 @@
 #include <windows.h>
 #include "menu.h"
 
-class ClientOptionExit : public MenuOption
+class ClientOptionQuit : public MenuOption
 {
 public:
-    [[nodiscard]] ResultCode execute() const override;
+    ClientOptionQuit(const std::shared_ptr<Menu> &menu);
+
+    [[nodiscard]] ResultCode execute() override;
+    
     bool isQuitOption() const override;
+
+private:
+    std::shared_ptr<Menu> _menu;
 };
 
 class ClientMenu : public Menu
 {
 public:
+
     ClientMenu(const std::shared_ptr<HANDLE> &pipe, std::ostream &out, std::istream &in);
+
     [[nodiscard]] ResultCode start() override;
 
 private:
+    virtual std::expected<std::shared_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
+
     [[nodiscard]] ResultCode initializeOption() override;
+
     std::shared_ptr<HANDLE> _pipe;
     std::ostream &_out;
     std::istream &_in;
