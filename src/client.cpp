@@ -15,7 +15,7 @@ int main()
     const std::string pipeName = R"(\\.\pipe\os-lab5-pipe)";
 
     // creating pipe
-    auto pipe = SmartWinapi::make_unique_handle(CreateFileA(
+    auto pipe = SmartWinapi::make_shared_handle(CreateFileA(
         pipeName.c_str(),
         GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ,
