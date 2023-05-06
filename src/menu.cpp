@@ -5,11 +5,14 @@
 #include "menu.h"
 #include "result_codes.h"
 
+MenuOption::MenuOption() : _menu(std::shared_ptr<Menu>())
+{
+}
 MenuOption::MenuOption(const std::shared_ptr<Menu> &menu) : _menu(menu)
 {
 }
 
-ResultCode MenuOption::execute() const
+ResultCode MenuOption::execute()
 {
     return ResultCode::OK;
 }
