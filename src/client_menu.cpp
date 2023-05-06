@@ -14,8 +14,10 @@ bool ClientOptionExit::isQuitOption() const
     return true;
 }
 
-ClientMenu::ClientMenu() : Menu()
+ClientMenu::ClientMenu(const std::shared_ptr<HANDLE> &pipe, std::ostream &out, std::istream &in) : 
+    Menu(), _pipe(pipe), _out(out), _in(in)
 {
+
 }
 
 ResultCode ClientMenu::start()
