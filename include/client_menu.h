@@ -15,9 +15,6 @@ public:
     [[nodiscard]] ResultCode execute() override;
 
     bool isQuitOption() const override;
-
-private:
-    std::shared_ptr<Menu> _menu;
 };
 
 class ClientMenu : public Menu
