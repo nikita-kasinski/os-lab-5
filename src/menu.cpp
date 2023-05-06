@@ -5,10 +5,14 @@
 #include "menu.h"
 #include "result_codes.h"
 
+Menu::Menu()
+{
+    _option = std::unique_ptr<MenuOption>();
+}
 ResultCode Menu::start()
 {
     bool started = false;
-    while (not started or not option->isQuitOption())
+    while (not started or not _option->isQuitOption())
     {
         started = true;
 
@@ -16,7 +20,7 @@ ResultCode Menu::start()
         if (ResultCode::OK != initializeResult)
             return initializeResult;
         
-        ResultCode executeResult = option->execute();
+        ResultCode executeResult = _option->execute();
         if (ResultCode::OK != executeResult)
             return executeResult;
     }
