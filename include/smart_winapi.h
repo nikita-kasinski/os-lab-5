@@ -33,5 +33,7 @@ public:
 
     template <typename SmartPtr>
     static std::vector<HANDLE> unwrapSmartPointersHandleArray(const std::vector<SmartPtr> &array);
-    static HANDLE unwrap(const std::shared_ptr<HANDLE> &source);
+
+    template <typename SmartPtr>
+    static HANDLE unwrap(const SmartPtr &source);
 };
