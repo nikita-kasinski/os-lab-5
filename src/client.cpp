@@ -7,22 +7,24 @@
 #include <windows.h>
 #include "utility.h"
 #include "protocol.h"
+#include "client_menu.h"
+#include "smart_winapi.h"
 
 int main()
 {
     const std::string pipeName = R"(\\.\pipe\os-lab5-pipe)";
 
     // creating pipe
-    HANDLE pipe = CreateFileA(
+    auto pipe = SmartWinapi::make_unique_handle(CreateFileA(
         pipeName.c_str(),
         GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ,
         NULL,
         OPEN_EXISTING,
         0,
-        NULL);
+        NULL));
 
-    if (pipe == INVALID_HANDLE_VALUE)
+    if (SmartWinapi::unwrap(pipe) == INVALID_HANDLE_VALUE)
     {
         std::cerr << "Connection with the named pipe failed: " << GetLastError() << "\n";
         return 2;
@@ -49,7 +51,7 @@ int main()
         }
         else if (request == 1)
         {
-            WriteFile(pipe, &Protocol::QUIT, Protocol::SIZE, &bytes, NULL);
+            WriteFile(SmartWinapi::unwrap(pipe), &Protocol::QUIT, Protocol::SIZE, &bytes, NULL);
 
             std::cout << "Quit.\n";
             break;
@@ -62,13 +64,13 @@ int main()
             std::cout << keyPrompt;
             std::cin >> key;
 
-            WriteFile(pipe, &Protocol::READ, Protocol::SIZE, &bytes, NULL);
-            WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
+            WriteFile(SmartWinapi::unwrap(pipe), &Protocol::READ, Protocol::SIZE, &bytes, NULL);
+            WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
 
             std::cout << "Waiting for record to become available for reading\n";
 
             char response;
-            ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+            ReadFile(SmartWinapi::unwrap(pipe), &response, Protocol::SIZE, &bytes, NULL);
 
             
             if (Protocol::FAILURE == response)
@@ -81,13 +83,13 @@ int main()
                 std::cout << "Access granted\n";
 
                 Employee employeeRead;
-                ReadFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
                 std::cout << "Employee received\n";
                 Utility::printEmployee(std::cout, employeeRead);
                 std::cout << "Enter any key to continue\n";
                 char x;
                 std::cin >> x;
-                WriteFile(pipe, &Protocol::FINISH, Protocol::SIZE, &bytes, NULL);
+                WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FINISH, Protocol::SIZE, &bytes, NULL);
             }
             else 
             {
@@ -103,13 +105,13 @@ int main()
             std::cout << keyPrompt;
             std::cin >> key;
 
-            WriteFile(pipe, &Protocol::MODIFY, Protocol::SIZE, &bytes, NULL);
-            WriteFile(pipe, reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
+            WriteFile(SmartWinapi::unwrap(pipe), &Protocol::MODIFY, Protocol::SIZE, &bytes, NULL);
+            WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char*>(&key), sizeof(int), &bytes, NULL);
 
             std::cout << "Waiting for record to become available for modifying\n";
 
             char response;
-            ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+            ReadFile(SmartWinapi::unwrap(pipe), &response, Protocol::SIZE, &bytes, NULL);
 
 
             if (Protocol::SUCCESS == response)
@@ -118,7 +120,7 @@ int main()
 
                 // reading old record
                 Employee employeeRead;
-                ReadFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
                 // printing old record
                 std::cout << "Old record\n";
@@ -129,11 +131,11 @@ int main()
                 employeeRead = Utility::readEmployee(std::cin, std::cout);
 
                 // writing rew record to pipe
-                WriteFile(pipe, reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
+                WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char*>(&employeeRead), sizeof(Employee), &bytes, NULL);
 
                 // reading response
                 char response;
-                ReadFile(pipe, &response, Protocol::SIZE, &bytes, NULL);
+                ReadFile(SmartWinapi::unwrap(pipe), &response, Protocol::SIZE, &bytes, NULL);
 
                 if (Protocol::SUCCESS == response)
                 {
@@ -141,7 +143,7 @@ int main()
                     std::cout << "Enter any key to continue\n";
                     char x;
                     std::cin >> x;
-                    WriteFile(pipe, &Protocol::FINISH, Protocol::SIZE, &bytes, NULL);
+                    WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FINISH, Protocol::SIZE, &bytes, NULL);
                 }
                 else if (Protocol::FAILURE == response)
                 {
