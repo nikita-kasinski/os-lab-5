@@ -7,6 +7,9 @@
 #include <result_codes.h>
 #include <expected>
 
+class Menu;
+class MenuOption;
+
 class MenuOption
 {
 public:
