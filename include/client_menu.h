@@ -29,6 +29,13 @@ public:
     [[nodiscard]] ResultCode start() override;
 
 private:
+    enum class Options
+    {
+        Quit,
+        ReadRecord,
+        WriteRecord,
+    };
+
     virtual std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
 
     [[nodiscard]] ResultCode initializeOption() override;
