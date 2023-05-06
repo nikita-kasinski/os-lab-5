@@ -16,8 +16,8 @@ public:
 class Menu
 {
 public:
-    [[nodiscard]] virtual ResultCode initializeOption() = 0;
     [[nodiscard]] virtual ResultCode start() = 0;
 protected:
+    [[nodiscard]] virtual ResultCode initializeOption() = 0;
     std::unique_ptr<MenuOption> option;
 };
