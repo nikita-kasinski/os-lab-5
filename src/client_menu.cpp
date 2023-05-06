@@ -1,8 +1,6 @@
 //
 // Created by Nikita Kasinski
 //
-#pragma once
-
 #include "client_menu.h"
 #include <iostream>
 
@@ -31,7 +29,7 @@ ResultCode ClientMenu::initializeOption()
     {
         _option = std::make_unique<ClientOptionExit>();
     }
-    catch(std::bad_alloc)
+    catch(std::bad_alloc&)
     {
         return ResultCode::BadAlloc;
     }
