@@ -3,13 +3,20 @@
 //
 #include "client_menu.h"
 #include <iostream>
+#include "utility.h"
 
-ResultCode ClientOptionExit::execute() const
+ClientOptionQuit::ClientOptionQuit(const std::shared_ptr<Menu> &menu):
+_menu(menu)
+{
+    
+}
+
+ResultCode ClientOptionQuit::execute()
 {
     return MenuOption::execute();
 }
 
-bool ClientOptionExit::isQuitOption() const
+bool ClientOptionQuit::isQuitOption() const
 {
     return true;
 }
@@ -27,9 +34,26 @@ ResultCode ClientMenu::start()
 
 ResultCode ClientMenu::initializeOption()
 {
+    // TO DO make function to create menu
+    std::string menu =
+        "Enter corresponding request: \n"
+        "   0 to see menu\n"
+        "   1 to quit\n"
+        "   2 to read record\n"
+        "   3 to modify record\n";
+    _out << menu;
+    size_t request = Utility::safeUnsignedIntegerInput(_in, _out, "Enter request: ", "Value must be positive integer\n");
     try
     {
-        _option = std::make_unique<ClientOptionExit>();
+        auto expected_option = createMenuOption(request);
+        if (expected_option)
+        {
+            _option = std::move(expected_option.value());
+        }
+        else
+        {
+            //TODO add error handling once error is established
+        }
     }
     catch(std::bad_alloc&)
     {
@@ -40,4 +64,9 @@ ResultCode ClientMenu::initializeOption()
         return ResultCode::UnrecognizedInitializationError;
     }
     return ResultCode::OK;
+}
+
+std::expected<std::unique_ptr<MenuOption>, ResultCode> ClientMenu::createMenuOption(int rawEnumValue) const
+{
+    
 }
