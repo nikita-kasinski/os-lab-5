@@ -9,8 +9,11 @@
 class MenuOption
 {
 public:
+    MenuOption(const std::shared_ptr<Menu> &menu);
     [[nodiscard]] virtual ResultCode execute() const = 0;
     virtual bool isQuitOption() const = 0;
+protected:
+    std::shared_ptr<Menu> _menu;
 };
 
 class Menu

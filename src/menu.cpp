@@ -5,6 +5,10 @@
 #include "menu.h"
 #include "result_codes.h"
 
+MenuOption::MenuOption(const std::shared_ptr<Menu> &menu) : _menu(menu)
+{
+}
+
 ResultCode MenuOption::execute() const
 {
     return ResultCode::OK;
@@ -24,7 +28,7 @@ ResultCode Menu::start()
         ResultCode initializeResult = initializeOption();
         if (ResultCode::OK != initializeResult)
             return initializeResult;
-        
+
         ResultCode executeResult = _option->execute();
         if (ResultCode::OK != executeResult)
             return executeResult;
