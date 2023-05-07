@@ -4,6 +4,8 @@
 #include "client_menu.h"
 #include <iostream>
 #include "utility.h"
+#include "smart_winapi.h"
+#include "protocol.h"
 
 ClientMenu::ClientOptionQuit::ClientOptionQuit(const ClientMenu *menu) : MenuOption(menu)
 {
@@ -35,6 +37,63 @@ ResultCode ClientMenu::ClientOptionMenu::execute()
 bool ClientMenu::ClientOptionMenu::isQuitOption() const
 {
     return Menu::MenuOption::isQuitOption();
+}
+
+ClientMenu::ClientOptionReadRecord::ClientOptionReadRecord(const ClientMenu *menu) : MenuOption(menu)
+{
+}
+
+ResultCode ClientMenu::ClientOptionReadRecord::execute()
+{
+    auto clientMenu = dynamic_cast<const ClientMenu *>(_menu);
+    std::ostream &out = clientMenu->getOutStream();
+    std::istream &in = clientMenu->getInStream();
+    auto smartPipe = clientMenu->getPipe();
+    HANDLE unwrappedPipe = SmartWinapi::unwrap(smartPipe);
+    std::string keyPrompt = "Input employee id to access its record: ";
+    DWORD bytes;
+
+    int key = -1;
+    out << keyPrompt;
+    in >> key;
+
+    WriteFile(unwrappedPipe, &Protocol::READ, Protocol::SIZE, &bytes, NULL);
+    WriteFile(unwrappedPipe, reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
+
+    out << "Waiting for record to become available for reading\n";
+
+    char response;
+    ReadFile(unwrappedPipe, &response, Protocol::SIZE, &bytes, NULL);
+
+    if (Protocol::FAILURE == response)
+    {
+        out << "There is no employee under such id\n";
+        return ResultCode::EmployeeNotFound;
+    }
+    else if (Protocol::SUCCESS == response)
+    {
+        out << "Access granted\n";
+
+        Employee employeeRead;
+        ReadFile(unwrappedPipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+        out << "Employee received\n";
+        Utility::printEmployee(out, employeeRead);
+        out << "Enter any key to continue\n";
+        char x;
+        in >> x;
+        WriteFile(unwrappedPipe, &Protocol::FINISH, Protocol::SIZE, &bytes, NULL);
+    }
+    else
+    {
+        out << "Protocol violation. Abort\n";
+        return ResultCode::ProtocolViolation;
+    }
+    return ResultCode::OK;
+}
+
+bool ClientMenu::ClientOptionReadRecord::isQuitOption() const
+{
+    return MenuOption::isQuitOption();
 }
 
 ClientMenu::ClientMenu(const std::shared_ptr<HANDLE> &pipe, std::ostream &out, std::istream &in) : Menu(), _pipe(pipe), _out(out), _in(in)
@@ -110,6 +169,8 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createM
         break;
     }
     }
+    // neither should reach here
+    return std::unexpected(ResultCode::UnreachableCodeReached);
 }
 
 bool ClientMenu::isValidOptionCode(int rawEnumValue) const
