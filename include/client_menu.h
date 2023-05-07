@@ -25,6 +25,14 @@ public:
 
     [[nodiscard]] ResultCode start() override;
 
+    std::shared_ptr<HANDLE> getPipe() const;
+
+    std::istream &getInStream() const;
+
+    std::ostream &getOutStream() const;
+
+    std::string getMenu() const;
+
 private:
     enum class Options
     {
