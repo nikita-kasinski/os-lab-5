@@ -11,4 +11,6 @@ enum ResultCode
     UnrecognizedInitializationError,
     UnrecognizedOption,
     UnreachableCodeReached,
+    EmployeeNotFound,
+    ProtocolViolation,
 };
