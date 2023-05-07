@@ -9,4 +9,5 @@ enum ResultCode
     OK,
     BadAlloc,
     UnrecognizedInitializationError,
+    UnrecognizedOption,
 };
