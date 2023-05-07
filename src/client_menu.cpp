@@ -154,7 +154,7 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createM
     }
     case ClientMenu::Options::ReadRecord:
     {
-        // TODO add return statement with ClientOptionReadRecord
+        return std::make_unique<ClientOptionReadRecord>(this);
         break;
     }
     case ClientMenu::Options::ModifyRecord:
