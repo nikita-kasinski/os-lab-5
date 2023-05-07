@@ -17,6 +17,7 @@ public:
 private:
     class ClientOptionQuit;
     class ClientOptionMenu;
+    class ClientOptionReadRecord;
 
     enum class Options
     {
@@ -60,6 +61,16 @@ class ClientMenu::ClientOptionMenu : public MenuOption
 {
 public:
     ClientOptionMenu(const ClientMenu *menu);
+
+    [[nodiscard]] ResultCode execute() override;
+
+    bool isQuitOption() const override;
+};
+
+class ClientMenu::ClientOptionReadRecord : public MenuOption
+{
+public:
+    ClientOptionReadRecord(const ClientMenu *menu);
 
     [[nodiscard]] ResultCode execute() override;
 
