@@ -28,6 +28,7 @@ public:
 private:
     enum class Options
     {
+        Menu,
         Quit,
         ReadRecord,
         ModifyRecord,
