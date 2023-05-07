@@ -17,6 +17,16 @@ public:
     bool isQuitOption() const override;
 };
 
+class ClientOptionMenu : public MenuOption
+{
+public:
+    ClientOptionMenu(const std::shared_ptr<Menu> &menu);
+
+    [[nodiscard]] ResultCode execute() override;
+
+    bool isQuitOption() const override;
+};
+
 class ClientMenu : public Menu
 {
 public:
