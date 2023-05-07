@@ -5,7 +5,7 @@
 #include <iostream>
 #include "utility.h"
 
-ClientMenu::ClientOptionQuit::ClientOptionQuit(const std::shared_ptr<ClientMenu> &menu) : MenuOption(menu)
+ClientMenu::ClientOptionQuit::ClientOptionQuit(const ClientMenu *menu) : MenuOption(menu)
 {
 }
 
@@ -19,14 +19,22 @@ bool ClientMenu::ClientOptionQuit::isQuitOption() const
     return true;
 }
 
-ClientMenu::ClientOptionMenu::ClientOptionMenu(const std::shared_ptr<ClientMenu> &menu) : MenuOption(menu)
+ClientMenu::ClientOptionMenu::ClientOptionMenu(const ClientMenu *menu) : MenuOption(menu)
 {
 }
 
 ResultCode ClientMenu::ClientOptionMenu::execute()
 {
-    auto menu = std::dynamic_pointer_cast<ClientMenu>(_menu)->getMenu();
-    
+    auto clientMenu = dynamic_cast<const ClientMenu*>(_menu);
+    std::string menuString = clientMenu->getMenu();
+    std::ostream &out = clientMenu->getOutStream();
+    out << menuString;
+    return ResultCode::OK;
+}
+
+bool ClientMenu::ClientOptionMenu::isQuitOption() const
+{
+    return Menu::MenuOption::isQuitOption();
 }
 
 ClientMenu::ClientMenu(const std::shared_ptr<HANDLE> &pipe, std::ostream &out, std::istream &in) : Menu(), _pipe(pipe), _out(out), _in(in)

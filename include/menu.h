@@ -33,7 +33,7 @@ class Menu::MenuOption
 {
 public:
 
-    MenuOption(Menu *menu);
+    MenuOption(const Menu *menu);
 
     // default implementation returns ResultCode::OK
     [[nodiscard]] virtual ResultCode execute() = 0;
@@ -42,5 +42,5 @@ public:
     virtual bool isQuitOption() const = 0;
 
 protected:
-    Menu *_menu = nullptr;
+    const Menu *_menu = nullptr;
 };

@@ -40,7 +40,7 @@ private:
     std::ostream &getOutStream() const;
 
     std::string getMenu() const override;
-    
+
     std::shared_ptr<HANDLE> _pipe;
     std::ostream &_out;
     std::istream &_in;
@@ -49,7 +49,7 @@ private:
 class ClientMenu::ClientOptionQuit : public MenuOption
 {
 public:
-    ClientOptionQuit(const std::shared_ptr<ClientMenu> &menu);
+    ClientOptionQuit(const ClientMenu *menu);
 
     [[nodiscard]] ResultCode execute() override;
 
@@ -59,7 +59,7 @@ public:
 class ClientMenu::ClientOptionMenu : public MenuOption
 {
 public:
-    ClientOptionMenu(const std::shared_ptr<ClientMenu> &menu);
+    ClientOptionMenu(const ClientMenu *menu);
 
     [[nodiscard]] ResultCode execute() override;
 

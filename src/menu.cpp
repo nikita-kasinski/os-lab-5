@@ -5,7 +5,7 @@
 #include "menu.h"
 #include "result_codes.h"
 
-Menu::MenuOption::MenuOption(Menu *menu) : _menu(menu)
+Menu::MenuOption::MenuOption(const Menu *menu) : _menu(menu)
 {
 }
 
