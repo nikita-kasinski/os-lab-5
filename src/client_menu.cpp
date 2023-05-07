@@ -68,7 +68,13 @@ ResultCode ClientMenu::initializeOption()
 
 std::expected<std::unique_ptr<MenuOption>, ResultCode> ClientMenu::createMenuOption(int rawEnumValue) const
 {
+    if (!isValidOptionCode(rawEnumValue))
+    {
+        return std::unexpected(ResultCode::UnrecognizedOption);
+    }
+
     ClientMenu::Options optionCode = static_cast<ClientMenu::Options>(rawEnumValue);
+    
     switch(optionCode)
     {
         case ClientMenu::Options::Quit:
