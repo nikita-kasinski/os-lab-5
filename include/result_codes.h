@@ -13,4 +13,5 @@ enum ResultCode
     UnreachableCodeReached,
     EmployeeNotFound,
     ProtocolViolation,
+    EmployeeIdTaken,
 };
