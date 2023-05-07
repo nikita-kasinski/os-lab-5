@@ -46,6 +46,8 @@ private:
     std::shared_ptr<HANDLE> _pipe;
     std::ostream &_out;
     std::istream &_in;
+
+    const std::string keyPrompt = "Input employee id to access its record: ";
 };
 
 class ClientMenu::ClientOptionQuit : public MenuOption
