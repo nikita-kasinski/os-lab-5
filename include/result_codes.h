@@ -10,4 +10,5 @@ enum ResultCode
     BadAlloc,
     UnrecognizedInitializationError,
     UnrecognizedOption,
+    UnreachableCodeReached,
 };
