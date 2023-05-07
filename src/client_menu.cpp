@@ -25,7 +25,7 @@ ClientMenu::ClientOptionMenu::ClientOptionMenu(const ClientMenu *menu) : MenuOpt
 
 ResultCode ClientMenu::ClientOptionMenu::execute()
 {
-    auto clientMenu = dynamic_cast<const ClientMenu*>(_menu);
+    auto clientMenu = dynamic_cast<const ClientMenu *>(_menu);
     std::string menuString = clientMenu->getMenu();
     std::ostream &out = clientMenu->getOutStream();
     out << menuString;
@@ -83,6 +83,11 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createM
 
     switch (optionCode)
     {
+    case ClientMenu::Options::Menu:
+    {
+        return std::make_unique<ClientOptionMenu>(this);
+        break;
+    }
     case ClientMenu::Options::Quit:
     {
         return std::make_unique<ClientOptionQuit>(this);
@@ -96,6 +101,12 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createM
     case ClientMenu::Options::ModifyRecord:
     {
         // TODO add return statement with ClientOptionModifyRecord
+        break;
+    }
+    case ClientMenu::Options::Last:
+    {
+        // code shouldn't reach here
+        return std::unexpected(ResultCode::UnreachableCodeReached);
         break;
     }
     }
