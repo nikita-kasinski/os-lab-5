@@ -191,7 +191,7 @@ ResultCode ClientMenu::start()
 
 ResultCode ClientMenu::initializeOption()
 {
-    size_t request = Utility::safeUnsignedIntegerInput(_in, _out, "Enter request: ", "Value must be positive integer\n");
+    size_t request = Utility::safeUnsignedIntegerInput(_in, _out, "Enter request: ", "Value must be non negative integer\n");
     try
     {
         auto expected_option = createMenuOption(request);
@@ -243,7 +243,7 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createM
     }
     case ClientMenu::Options::ModifyRecord:
     {
-        // TODO add return statement with ClientOptionModifyRecord
+        return std::make_unique<ClientOptionModifyRecord>(this);
         break;
     }
     case ClientMenu::Options::Last:
