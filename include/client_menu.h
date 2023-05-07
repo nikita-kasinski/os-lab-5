@@ -7,43 +7,17 @@
 #include <windows.h>
 #include "menu.h"
 
-class ClientOptionQuit : public MenuOption
-{
-public:
-    ClientOptionQuit(const std::shared_ptr<Menu> &menu);
-
-    [[nodiscard]] ResultCode execute() override;
-
-    bool isQuitOption() const override;
-};
-
-class ClientOptionMenu : public MenuOption
-{
-public:
-    ClientOptionMenu(const std::shared_ptr<Menu> &menu);
-
-    [[nodiscard]] ResultCode execute() override;
-
-    bool isQuitOption() const override;
-};
-
 class ClientMenu : public Menu
 {
 public:
-
     ClientMenu(const std::shared_ptr<HANDLE> &pipe, std::ostream &out, std::istream &in);
 
     [[nodiscard]] ResultCode start() override;
 
-    std::shared_ptr<HANDLE> getPipe() const;
-
-    std::istream &getInStream() const;
-
-    std::ostream &getOutStream() const;
-
-    std::string getMenu() const;
-
 private:
+    class ClientOptionQuit;
+    class ClientOptionMenu;
+
     enum class Options
     {
         Menu,
@@ -59,7 +33,35 @@ private:
 
     [[nodiscard]] ResultCode initializeOption() override;
 
+    std::shared_ptr<HANDLE> getPipe() const;
+
+    std::istream &getInStream() const;
+
+    std::ostream &getOutStream() const;
+
+    std::string getMenu() const override;
+    
     std::shared_ptr<HANDLE> _pipe;
     std::ostream &_out;
     std::istream &_in;
+};
+
+class ClientMenu::ClientOptionQuit : public MenuOption
+{
+public:
+    ClientOptionQuit(const std::shared_ptr<ClientMenu> &menu);
+
+    [[nodiscard]] ResultCode execute() override;
+
+    bool isQuitOption() const override;
+};
+
+class ClientMenu::ClientOptionMenu : public MenuOption
+{
+public:
+    ClientOptionMenu(const std::shared_ptr<ClientMenu> &menu);
+
+    [[nodiscard]] ResultCode execute() override;
+
+    bool isQuitOption() const override;
 };
