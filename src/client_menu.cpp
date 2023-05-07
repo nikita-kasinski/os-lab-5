@@ -88,3 +88,16 @@ std::expected<std::unique_ptr<MenuOption>, ResultCode> ClientMenu::createMenuOpt
         }
     }
 }
+
+bool ClientMenu::isValidOptionCode(int rawEnumValue) const
+{
+    if (rawEnumValue < 0)
+    {
+        return false;
+    }
+    if (rawEnumValue >= static_cast<int>(ClientMenu::Options::Last))
+    {
+        return false;
+    }
+    return true;
+}
