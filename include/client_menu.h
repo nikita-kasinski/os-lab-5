@@ -30,7 +30,7 @@ private:
     {
         Quit,
         ReadRecord,
-        WriteRecord,
+        ModifyRecord,
     };
 
     virtual std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
