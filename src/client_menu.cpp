@@ -34,14 +34,6 @@ ResultCode ClientMenu::start()
 
 ResultCode ClientMenu::initializeOption()
 {
-    // TODO make function to create menu
-    std::string menu =
-        "Enter corresponding request: \n"
-        "   0 to see menu\n"
-        "   1 to quit\n"
-        "   2 to read record\n"
-        "   3 to modify record\n";
-    _out << menu;
     size_t request = Utility::safeUnsignedIntegerInput(_in, _out, "Enter request: ", "Value must be positive integer\n");
     try
     {
@@ -106,4 +98,31 @@ bool ClientMenu::isValidOptionCode(int rawEnumValue) const
         return false;
     }
     return true;
+}
+
+std::shared_ptr<HANDLE> ClientMenu::getPipe() const
+{
+    return _pipe;
+}
+
+std::istream &ClientMenu::getInStream() const
+{
+    return _in;
+}
+
+std::ostream &ClientMenu::getOutStream() const
+{
+    return _out;
+}
+
+std::string ClientMenu::getMenu() const
+{
+    // TODO make function dynamic from options enum
+    std::string menu =
+        "Enter corresponding request: \n"
+        "   0 to see menu\n"
+        "   1 to quit\n"
+        "   2 to read record\n"
+        "   3 to modify record\n";
+    return menu;
 }
