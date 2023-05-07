@@ -31,7 +31,10 @@ private:
         Quit,
         ReadRecord,
         ModifyRecord,
+        Last,
     };
+
+    bool isValidOptionCode(int rawEnumValue) const;
 
     virtual std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
 
