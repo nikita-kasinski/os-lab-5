@@ -32,9 +32,8 @@ protected:
 class Menu::MenuOption
 {
 public:
-    MenuOption();
 
-    MenuOption(const std::shared_ptr<Menu> &menu);
+    MenuOption(Menu *menu);
 
     // default implementation returns ResultCode::OK
     [[nodiscard]] virtual ResultCode execute() = 0;
@@ -43,5 +42,5 @@ public:
     virtual bool isQuitOption() const = 0;
 
 protected:
-    std::shared_ptr<Menu> _menu;
+    Menu *_menu = nullptr;
 };

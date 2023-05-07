@@ -5,10 +5,7 @@
 #include "menu.h"
 #include "result_codes.h"
 
-Menu::MenuOption::MenuOption() : _menu(std::shared_ptr<Menu>())
-{
-}
-Menu::MenuOption::MenuOption(const std::shared_ptr<Menu> &menu) : _menu(menu)
+Menu::MenuOption::MenuOption(Menu *menu) : _menu(menu)
 {
 }
 
