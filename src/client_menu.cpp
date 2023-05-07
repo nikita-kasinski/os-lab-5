@@ -6,7 +6,7 @@
 #include "utility.h"
 
 ClientOptionQuit::ClientOptionQuit(const std::shared_ptr<Menu> &menu):
-_menu(menu)
+MenuOption(menu)
 {
     
 }
@@ -34,7 +34,7 @@ ResultCode ClientMenu::start()
 
 ResultCode ClientMenu::initializeOption()
 {
-    // TO DO make function to create menu
+    // TODO make function to create menu
     std::string menu =
         "Enter corresponding request: \n"
         "   0 to see menu\n"
@@ -68,5 +68,23 @@ ResultCode ClientMenu::initializeOption()
 
 std::expected<std::unique_ptr<MenuOption>, ResultCode> ClientMenu::createMenuOption(int rawEnumValue) const
 {
-    
+    ClientMenu::Options optionCode = static_cast<ClientMenu::Options>(rawEnumValue);
+    switch(optionCode)
+    {
+        case ClientMenu::Options::Quit:
+        {
+            return std::make_unique<ClientOptionQuit>(this);
+            break;
+        }
+        case ClientMenu::Options::ReadRecord:
+        {
+            // TODO add return statement with ClientOptionReadRecord
+            break;
+        }
+        case ClientMenu::Options::ModifyRecord:
+        {
+            // TODO add return statement with ClientOptionModifyRecord
+            break;
+        }
+    }
 }
