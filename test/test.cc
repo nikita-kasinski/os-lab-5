@@ -292,17 +292,19 @@ TEST(Controller_writeRecord, NewIdIsTaken)
 
 TEST(Utility_safeUnsignedIntegerInput, StandardInput)
 {
-    std::istringstream testStream("1 2 3 4\n");
+    std::istringstream testStream("1 2 3 4 0\n");
     std::ostringstream ostream;
-    size_t a, b, c, d;
+    size_t a, b, c, d, e;
     a = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
     b = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
     c = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
     d = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
+    e = Utility::safeUnsignedIntegerInput(testStream, ostream, "", "");
     EXPECT_EQ(a, 1);
     EXPECT_EQ(b, 2);
     EXPECT_EQ(c, 3);
     EXPECT_EQ(d, 4);
+    EXPECT_EQ(e, 0);
 }
 
 TEST(Utility_safeUnsignedIntegerInput, FailedInput)
