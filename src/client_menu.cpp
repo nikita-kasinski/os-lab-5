@@ -13,7 +13,14 @@ ClientMenu::ClientOptionQuit::ClientOptionQuit(const ClientMenu *menu) : MenuOpt
 
 ResultCode ClientMenu::ClientOptionQuit::execute()
 {
-    return MenuOption::execute();
+    auto clientMenu = dynamic_cast<const ClientMenu *>(_menu);
+    auto smartPipe = clientMenu->getPipe();
+    HANDLE unwrappedPipe = SmartWinapi::unwrap(smartPipe);
+    DWORD bytes;
+
+    WriteFile(unwrappedPipe, &Protocol::QUIT, Protocol::SIZE, &bytes, NULL);
+
+    return ResultCode::OK;
 }
 
 bool ClientMenu::ClientOptionQuit::isQuitOption() const
@@ -201,7 +208,7 @@ ResultCode ClientMenu::initializeOption()
         }
         else
         {
-            // TODO add error handling once error is established
+            return expected_option.error();
         }
     }
     catch (std::bad_alloc &)
