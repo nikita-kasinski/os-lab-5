@@ -19,6 +19,7 @@ public:
 
     [[nodiscard]] virtual ResultCode execute() = 0;
 
+    // default implementation returs false
     virtual bool isQuitOption() const = 0;
 
 protected:

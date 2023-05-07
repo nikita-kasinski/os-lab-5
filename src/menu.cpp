@@ -12,6 +12,11 @@ MenuOption::MenuOption(const std::shared_ptr<Menu> &menu) : _menu(menu)
 {
 }
 
+bool MenuOption::isQuitOption() const
+{
+    return false;
+}
+
 ResultCode MenuOption::execute()
 {
     return ResultCode::OK;
