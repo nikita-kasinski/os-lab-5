@@ -5,19 +5,19 @@
 #include "menu.h"
 #include "result_codes.h"
 
-MenuOption::MenuOption() : _menu(std::shared_ptr<Menu>())
+Menu::MenuOption::MenuOption() : _menu(std::shared_ptr<Menu>())
 {
 }
-MenuOption::MenuOption(const std::shared_ptr<Menu> &menu) : _menu(menu)
+Menu::MenuOption::MenuOption(const std::shared_ptr<Menu> &menu) : _menu(menu)
 {
 }
 
-bool MenuOption::isQuitOption() const
+bool Menu::MenuOption::isQuitOption() const
 {
     return false;
 }
 
-ResultCode MenuOption::execute()
+ResultCode Menu::MenuOption::execute()
 {
     return ResultCode::OK;
 }
