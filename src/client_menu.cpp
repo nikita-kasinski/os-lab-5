@@ -5,26 +5,32 @@
 #include <iostream>
 #include "utility.h"
 
-ClientOptionQuit::ClientOptionQuit(const std::shared_ptr<Menu> &menu):
-MenuOption(menu)
+ClientMenu::ClientOptionQuit::ClientOptionQuit(const std::shared_ptr<ClientMenu> &menu) : MenuOption(menu)
 {
-    
 }
 
-ResultCode ClientOptionQuit::execute()
+ResultCode ClientMenu::ClientOptionQuit::execute()
 {
     return MenuOption::execute();
 }
 
-bool ClientOptionQuit::isQuitOption() const
+bool ClientMenu::ClientOptionQuit::isQuitOption() const
 {
     return true;
 }
 
-ClientMenu::ClientMenu(const std::shared_ptr<HANDLE> &pipe, std::ostream &out, std::istream &in) : 
-    Menu(), _pipe(pipe), _out(out), _in(in)
+ClientMenu::ClientOptionMenu::ClientOptionMenu(const std::shared_ptr<ClientMenu> &menu) : MenuOption(menu)
 {
+}
 
+ResultCode ClientMenu::ClientOptionMenu::execute()
+{
+    auto menu = std::dynamic_pointer_cast<ClientMenu>(_menu)->getMenu();
+    
+}
+
+ClientMenu::ClientMenu(const std::shared_ptr<HANDLE> &pipe, std::ostream &out, std::istream &in) : Menu(), _pipe(pipe), _out(out), _in(in)
+{
 }
 
 ResultCode ClientMenu::start()
@@ -44,21 +50,21 @@ ResultCode ClientMenu::initializeOption()
         }
         else
         {
-            //TODO add error handling once error is established
+            // TODO add error handling once error is established
         }
     }
-    catch(std::bad_alloc&)
+    catch (std::bad_alloc &)
     {
         return ResultCode::BadAlloc;
     }
-    catch(...)
+    catch (...)
     {
         return ResultCode::UnrecognizedInitializationError;
     }
     return ResultCode::OK;
 }
 
-std::expected<std::unique_ptr<MenuOption>, ResultCode> ClientMenu::createMenuOption(int rawEnumValue) const
+std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createMenuOption(int rawEnumValue) const
 {
     if (!isValidOptionCode(rawEnumValue))
     {
@@ -66,24 +72,24 @@ std::expected<std::unique_ptr<MenuOption>, ResultCode> ClientMenu::createMenuOpt
     }
 
     ClientMenu::Options optionCode = static_cast<ClientMenu::Options>(rawEnumValue);
-    
-    switch(optionCode)
+
+    switch (optionCode)
     {
-        case ClientMenu::Options::Quit:
-        {
-            return std::make_unique<ClientOptionQuit>(this);
-            break;
-        }
-        case ClientMenu::Options::ReadRecord:
-        {
-            // TODO add return statement with ClientOptionReadRecord
-            break;
-        }
-        case ClientMenu::Options::ModifyRecord:
-        {
-            // TODO add return statement with ClientOptionModifyRecord
-            break;
-        }
+    case ClientMenu::Options::Quit:
+    {
+        return std::make_unique<ClientOptionQuit>(this);
+        break;
+    }
+    case ClientMenu::Options::ReadRecord:
+    {
+        // TODO add return statement with ClientOptionReadRecord
+        break;
+    }
+    case ClientMenu::Options::ModifyRecord:
+    {
+        // TODO add return statement with ClientOptionModifyRecord
+        break;
+    }
     }
 }
 
