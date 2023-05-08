@@ -59,7 +59,7 @@ size_t Utility::safeUnsignedIntegerInput(std::istream &in, std::ostream &out, co
     int tempAns = -1;
     bool failed = false;
 
-    while (tempAns <= 0)
+    while (tempAns < 0)
     {
         if (failed)
         {
