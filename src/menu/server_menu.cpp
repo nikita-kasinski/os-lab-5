@@ -13,3 +13,7 @@ ResultCode ServerMenu::start()
     return Menu::start();
 }
 
+bool ServerMenu::isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const
+{
+    return Menu::isValidOptionCode(rawEnumValue, rawLastEnumValue);
+}

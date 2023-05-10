@@ -29,7 +29,7 @@ private:
         Last,
     };
 
-    bool isValidOptionCode(int rawEnumValue) const override;
+    bool isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const override;
 
     std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
 
