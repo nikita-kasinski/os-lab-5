@@ -6,7 +6,7 @@ objS = obj/server.o
 obj = \
 obj/utility.o obj/model.o obj/controller.o obj/employee.o obj/args.o \
 obj/client_handler.o obj/smart_winapi.o obj/concurrent_writer.o \
-obj/menu.o obj/client_menu.o
+obj/menu/menu.o obj/menu/client_menu.o
 objT = obj/test.o obj/tutility.o obj/tmodel.o obj/tcontroller.o obj/temployee.o obj/targs.o
 CC = g++
 CPPFLAGS = -std=c++2b -Wpedantic -Wall -Wextra -Iinclude
@@ -40,7 +40,7 @@ obj/t%.o: src/%.cpp include/%.h
 	$(CC) $(CPPFLAGS) $(COVERAGE) -c $< -o $@
 # additional recipes
 dirs:
-	-mkdir -p obj bin
+	-mkdir -p obj/menu bin
 clean:
 	-rm bin/*
 	-rm obj/*

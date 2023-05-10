@@ -2,7 +2,7 @@
 // Created by Nikita Kasinski
 //
 
-#include "menu.h"
+#include "menu/menu.h"
 #include "result_codes.h"
 
 Menu::MenuOption::MenuOption(const Menu *menu) : _menu(menu)

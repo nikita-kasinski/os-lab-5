@@ -7,7 +7,7 @@
 #include <windows.h>
 #include "utility.h"
 #include "protocol.h"
-#include "client_menu.h"
+#include "menu/client_menu.h"
 #include "smart_winapi.h"
 
 int main()
