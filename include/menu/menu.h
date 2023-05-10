@@ -26,8 +26,6 @@ protected:
 
     [[nodiscard]] virtual ResultCode initializeOption() = 0;
 
-    std::string virtual getMenuPrompt() const = 0;
-
     std::unique_ptr<MenuOption> _option;
 };
 

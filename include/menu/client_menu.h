@@ -31,7 +31,7 @@ private:
 
     bool isValidOptionCode(int rawEnumValue) const override;
 
-    virtual std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
+    std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
 
     [[nodiscard]] ResultCode initializeOption() override;
 
@@ -41,7 +41,7 @@ private:
 
     std::ostream &getOutStream() const;
 
-    std::string getMenuPrompt() const override;
+    std::string getMenuPrompt() const;
 
     std::shared_ptr<HANDLE> _pipe;
     std::ostream &_out;
