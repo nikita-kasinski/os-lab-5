@@ -48,7 +48,7 @@ ResultCode ClientMenu::initializeOption()
 
 std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createMenuOption(int rawEnumValue) const
 {
-    if (!isValidOptionCode(rawEnumValue))
+    if (!isValidOptionCode(rawEnumValue, static_cast<int>(ClientMenu::Options::Last)))
     {
         return std::unexpected(ResultCode::UnrecognizedOption);
     }
@@ -88,17 +88,9 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createM
     return std::unexpected(ResultCode::UnreachableCodeReached);
 }
 
-bool ClientMenu::isValidOptionCode(int rawEnumValue) const
+bool ClientMenu::isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const
 {
-    if (rawEnumValue < 0)
-    {
-        return false;
-    }
-    if (rawEnumValue >= static_cast<int>(ClientMenu::Options::Last))
-    {
-        return false;
-    }
-    return true;
+    return Menu::isValidOptionCode(rawEnumValue, rawLastEnumValue);
 }
 
 std::shared_ptr<HANDLE> ClientMenu::getPipe() const
