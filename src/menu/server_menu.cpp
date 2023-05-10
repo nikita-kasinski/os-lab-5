@@ -57,3 +57,22 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ServerMenu::createM
     // neither here
     return std::unexpected(ResultCode::UnreachableCodeReached);
 }
+
+std::expected<int, ResultCode> ServerMenu::getOptionCode() const
+{
+    HANDLE pipe = SmartWinapi::unwrap(_pipe);
+    size_t result;
+
+    DWORD bytes;
+    auto readResult = ReadFile(SmartWinapi::unwrap(pipe), &result, sizeof(char), &bytes, NULL);
+    if (readResult != TRUE)
+    {
+        return std::unexpected(ResultCode::PipeReadError);
+    }
+    if (bytes != sizeof(char))
+    {
+        return std::unexpected(ResultCode::PipeReadInvalidSize);
+    }
+
+    return result;
+}

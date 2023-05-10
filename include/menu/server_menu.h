@@ -37,6 +37,8 @@ private:
 
     [[nodiscard]] ResultCode initializeOption() override;
 
+    std::expected<int, ResultCode> getOptionCode() const override;
+
     // fields
 
     std::shared_ptr<ConcurrentWriter> _writer;
