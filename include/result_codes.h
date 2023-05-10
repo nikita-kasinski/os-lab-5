@@ -14,4 +14,8 @@ enum ResultCode
     EmployeeNotFound,
     ProtocolViolation,
     EmployeeIdTaken,
+    PipeReadInvalidSize,
+    PipeWriteInvalidSize,
+    PipeReadError,
+    PipeWriteError,
 };
