@@ -14,6 +14,8 @@ class ServerMenu : public Menu
 public:
     ServerMenu();
 
+    [[nodiscard]] ResultCode start() override;
+
 private:
     class ServerOptionQuit;
     class ServerOptionRead;
