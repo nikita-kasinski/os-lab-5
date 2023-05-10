@@ -2,6 +2,8 @@
 // Created by Nikita Kasinski
 //
 
+#pragma once
+
 #include "menu/client_menu.h"
 
 class ClientMenu::ClientOptionQuit : public MenuOption
