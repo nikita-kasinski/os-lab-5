@@ -7,8 +7,9 @@ menuDir = obj/menu
 obj = \
 obj/utility.o obj/model.o obj/controller.o obj/employee.o obj/args.o \
 obj/client_handler.o obj/smart_winapi.o obj/concurrent_writer.o \
-$(menuDir)/menu.o $(menuDir)/client_menu.o \
-$(menuDir)/client_option_quit.o $(menuDir)/client_option_menu.o $(menuDir)/client_option_read.o $(menuDir)/client_option_modify.o
+$(menuDir)/menu.o $(menuDir)/client_menu.o $(menuDir)/server_menu.o \
+$(menuDir)/client_option_quit.o $(menuDir)/client_option_menu.o $(menuDir)/client_option_read.o $(menuDir)/client_option_modify.o \
+$(menuDir)/server_option_read.o $(menuDir)/server_option_quit.o $(menuDir)/server_option_modify.o
 objT = obj/test.o obj/tutility.o obj/tmodel.o obj/tcontroller.o obj/temployee.o obj/targs.o
 CC = g++
 CPPFLAGS = -std=c++2b -Wpedantic -Wall -Wextra -Iinclude
