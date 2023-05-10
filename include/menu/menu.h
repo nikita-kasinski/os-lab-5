@@ -35,10 +35,8 @@ public:
 
     MenuOption(const Menu *menu);
 
-    // default implementation returns ResultCode::OK
     [[nodiscard]] virtual ResultCode execute() = 0;
 
-    // default implementation returns false
     virtual bool isQuitOption() const = 0;
 
 protected:
