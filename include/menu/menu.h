@@ -24,6 +24,8 @@ protected:
 
     virtual std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const = 0;
 
+    virtual std::expected<int, ResultCode> getOptionCode() const = 0;
+
     [[nodiscard]] virtual ResultCode initializeOption() = 0;
 
     std::unique_ptr<MenuOption> _option;

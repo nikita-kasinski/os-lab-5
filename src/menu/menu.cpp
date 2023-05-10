@@ -47,3 +47,37 @@ bool Menu::isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const
     }
     return true;
 }
+
+ResultCode Menu::initializeOption()
+{
+    auto expected_optionCode = getOptionCode();
+    if (expected_optionCode)
+    {
+        int optionCode = expected_optionCode.value();
+        try
+        {
+            auto expected_option = createMenuOption(optionCode);
+            if (expected_option)
+            {
+                _option = std::move(expected_option.value());
+            }
+            else
+            {
+                return expected_option.error();
+            }
+        }
+        catch (std::bad_alloc &)
+        {
+            return ResultCode::BadAlloc;
+        }
+        catch (...)
+        {
+            return ResultCode::UnrecognizedInitializationError;
+        }
+    }
+    else
+    {
+        return expected_optionCode.error();
+    }
+    return ResultCode::OK;
+}
