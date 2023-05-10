@@ -22,28 +22,7 @@ ResultCode ClientMenu::start()
 
 ResultCode ClientMenu::initializeOption()
 {
-    size_t request = Utility::safeUnsignedIntegerInput(_in, _out, "Enter request: ", "Value must be non negative integer\n");
-    try
-    {
-        auto expected_option = createMenuOption(request);
-        if (expected_option)
-        {
-            _option = std::move(expected_option.value());
-        }
-        else
-        {
-            return expected_option.error();
-        }
-    }
-    catch (std::bad_alloc &)
-    {
-        return ResultCode::BadAlloc;
-    }
-    catch (...)
-    {
-        return ResultCode::UnrecognizedInitializationError;
-    }
-    return ResultCode::OK;
+    return Menu::initializeOption();
 }
 
 std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createMenuOption(int rawEnumValue) const
@@ -118,4 +97,9 @@ std::string ClientMenu::getMenuPrompt() const
         "   2 to read record\n"
         "   3 to modify record\n";
     return menu;
+}
+
+std::expected<int, ResultCode> ClientMenu::getOptionCode() const
+{
+    return Utility::safeUnsignedIntegerInput(_in, _out, "Enter request: ", "Value must be non negative integer\n");
 }

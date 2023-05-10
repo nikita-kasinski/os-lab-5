@@ -31,6 +31,8 @@ private:
 
     bool isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const override;
 
+    std::expected<int, ResultCode> getOptionCode() const override;
+
     std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
 
     [[nodiscard]] ResultCode initializeOption() override;
