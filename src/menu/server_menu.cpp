@@ -77,7 +77,7 @@ std::expected<int, ResultCode> ServerMenu::getOptionCode() const
     size_t result;
 
     DWORD bytes;
-    auto readResult = ReadFile(SmartWinapi::unwrap(pipe), &result, sizeof(char), &bytes, NULL);
+    auto readResult = ReadFile(pipe, &result, sizeof(char), &bytes, NULL);
     if (readResult != TRUE)
     {
         return std::unexpected(ResultCode::PipeReadError);
