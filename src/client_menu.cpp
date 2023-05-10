@@ -35,7 +35,7 @@ ClientMenu::ClientOptionMenu::ClientOptionMenu(const ClientMenu *menu) : MenuOpt
 ResultCode ClientMenu::ClientOptionMenu::execute()
 {
     auto clientMenu = dynamic_cast<const ClientMenu *>(_menu);
-    std::string menuString = clientMenu->getMenu();
+    std::string menuString = clientMenu->getMenuPrompt();
     std::ostream &out = clientMenu->getOutStream();
     out << menuString;
     return ResultCode::OK;
@@ -292,7 +292,7 @@ std::ostream &ClientMenu::getOutStream() const
     return _out;
 }
 
-std::string ClientMenu::getMenu() const
+std::string ClientMenu::getMenuPrompt() const
 {
     // TODO make function dynamic from options enum
     std::string menu =
