@@ -11,6 +11,7 @@
 #include "protocol.h"
 #include "concurrent_writer.h"
 #include "smart_winapi.h"
+#include "menu/server_menu.h"
 
 DWORD WINAPI ClientHandler(LPVOID _args)
 {
@@ -18,8 +19,8 @@ DWORD WINAPI ClientHandler(LPVOID _args)
 
     // processing passed arguments
     ClientHandlerArgs args = *(ClientHandlerArgs *)_args;
-    std::size_t threadId = args.getId();
     std::size_t numberOfClients = args.getNumberOfClients();
+    std::size_t threadId = args.getId();
     std::shared_ptr<std::vector<std::size_t>> recordAccessReadCount = args.getRecordAccessReadCount();
     std::shared_ptr<Controller> ctrl = args.getController();
     std::shared_ptr<CRITICAL_SECTION> iocs = args.getIOCriticalSection();
@@ -51,170 +52,11 @@ DWORD WINAPI ClientHandler(LPVOID _args)
         return 3;
     }
 
-    while (true)
+    ServerMenu menu(pipe, threadId, ctrl, recordAccessReadCount, iocs, acs);
+    ResultCode result = menu.start();
+    if (ResultCode::OK != result)
     {
-        DWORD bytes;
-        char request;
-
-        writer.write("Thread ", threadId, " is working\n");
-
-        ReadFile(SmartWinapi::unwrap(pipe), &request, sizeof(char), &bytes, NULL);
-
-        if (Protocol::QUIT == request)
-        {
-            DisconnectNamedPipe(SmartWinapi::unwrap(pipe));
-            break;
-        }
-        else if (Protocol::READ == request)
-        {
-            // reading record
-
-            int key; // employee id
-            ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
-
-            writer.write("Thread ", threadId, " received key to read: ", key, "\n");
-
-            size_t recordId;
-            bool keyExists = ctrl->idToRecordId(key, recordId); // record id
-
-            if (keyExists)
-            {
-                HANDLE recordAccess = OpenMutexA(MUTEX_ALL_ACCESS, FALSE, Utility::getAccessMutexName(recordId).c_str());
-
-                writer.write("Thread ", threadId, " is waiting for record with key ", key, " to become available\n");
-
-                EnterCriticalSection(acs.get());
-                if (recordAccessReadCount->at(recordId) == 0)
-                {
-                    // record is not being read by any client. Waiting for access
-                    WaitForSingleObject(recordAccess, INFINITE); // waiting for record to become available
-                }
-                ++recordAccessReadCount->at(recordId);
-                LeaveCriticalSection(acs.get());
-
-                writer.write("Thread ", threadId, " access granted\n");
-
-                // reading record and sending to client
-                Employee employeeRead;
-                if (ctrl->getRecord(key, employeeRead))
-                {
-
-                    writer.write("Thread ", threadId, " has read employee and has sent it\n");
-
-                    WriteFile(SmartWinapi::unwrap(pipe), &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
-                    WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
-
-                    char response;
-
-                    // waiting for client to finish access to record
-                    writer.write("Thread ", threadId, " is waiting for client to stop reading record\n");
-
-                    ReadFile(SmartWinapi::unwrap(pipe), &response, Protocol::SIZE, &bytes, NULL);
-
-                    if (Protocol::FINISH != response)
-                    {
-                        writer.write("Protocol violation on stopping reading a record\n. Exit thread");
-                        ExitThread(2);
-                    }
-
-                    writer.write("Thread ", threadId, " has stopped reading record\n");
-                }
-                else
-                {
-                    WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
-                }
-
-                EnterCriticalSection(acs.get());
-                --recordAccessReadCount->at(recordId);
-                if (recordAccessReadCount->at(recordId) == 0)
-                {
-                    // no one is reading the record anymore
-                    ReleaseMutex(recordAccess);
-                }
-                LeaveCriticalSection(acs.get());
-            }
-            else
-            {
-                WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
-            }
-        }
-        else if (Protocol::MODIFY == request)
-        {
-            // modifying record
-
-            // reading key
-            int key;
-            ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
-
-            // trying to get recordId by id
-            size_t recordId;
-            bool keyExists = ctrl->idToRecordId(key, recordId);
-
-            if (keyExists)
-            {
-                // record exists
-
-                HANDLE recordAccess = OpenMutexA(MUTEX_ALL_ACCESS, FALSE, Utility::getAccessMutexName(recordId).c_str());
-
-                writer.write("Thread ", threadId, " is waiting for record ", recordId, " to become available for modifying\n");
-
-                // waiting for record access
-                WaitForSingleObject(recordAccess, INFINITE);
-
-                writer.write("Thread ", threadId, " access granted\n");
-
-                // writing success response
-                WriteFile(SmartWinapi::unwrap(pipe), &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
-
-                // reading record
-                Employee employeeRead;
-                if (ctrl->getRecord(key, employeeRead))
-                {
-
-                    // writing record
-                    WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
-
-                    // reading new record
-                    ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
-
-                    if (ctrl->setRecord(key, employeeRead))
-                    {
-                        WriteFile(SmartWinapi::unwrap(pipe), &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
-
-                        char response;
-                        ReadFile(SmartWinapi::unwrap(pipe), &response, Protocol::SIZE, &bytes, NULL);
-
-                        if (Protocol::FINISH != response)
-                        {
-                            writer.write("Thread ", threadId, " protocol violation. Abort\n");
-                            ExitThread(4);
-                        }
-                    }
-                    else
-                    {
-                        WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
-                    }
-                }
-                else
-                {
-                    WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
-                }
-
-                // marking record as not being modified
-                ReleaseMutex(recordAccess);
-            }
-            else
-            {
-                // writing failure response
-                WriteFile(SmartWinapi::unwrap(pipe), &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
-            }
-        }
-        else
-        {
-            
-            writer.write("Protocol violation. Exit thread\n");
-            ExitThread(3);
-        }
+        writer.write("Thread ", threadId, ": execution error ", result, "\n");
     }
 
     writer.write("Thread ", threadId, " ended\n");
