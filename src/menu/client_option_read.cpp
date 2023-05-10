@@ -61,5 +61,5 @@ ResultCode ClientMenu::ClientOptionReadRecord::execute()
 
 bool ClientMenu::ClientOptionReadRecord::isQuitOption() const
 {
-    return MenuOption::isQuitOption();
+    return false;
 }

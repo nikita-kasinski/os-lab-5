@@ -90,5 +90,5 @@ ResultCode ClientMenu::ClientOptionModifyRecord::execute()
 
 bool ClientMenu::ClientOptionModifyRecord::isQuitOption() const
 {
-    return MenuOption::isQuitOption();
+    return false;
 }

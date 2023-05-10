@@ -19,5 +19,5 @@ ResultCode ClientMenu::ClientOptionMenu::execute()
 
 bool ClientMenu::ClientOptionMenu::isQuitOption() const
 {
-    return Menu::MenuOption::isQuitOption();
+    return false;
 }

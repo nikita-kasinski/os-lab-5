@@ -9,16 +9,6 @@ Menu::MenuOption::MenuOption(const Menu *menu) : _menu(menu)
 {
 }
 
-bool Menu::MenuOption::isQuitOption() const
-{
-    return false;
-}
-
-ResultCode Menu::MenuOption::execute()
-{
-    return ResultCode::OK;
-}
-
 Menu::Menu()
 {
     _option = std::unique_ptr<MenuOption>();
