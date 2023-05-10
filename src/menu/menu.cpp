@@ -34,3 +34,16 @@ ResultCode Menu::start()
     }
     return ResultCode::OK;
 }
+
+bool Menu::isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const
+{
+    if (rawEnumValue < 0)
+    {
+        return false;
+    }
+    if (rawEnumValue >= rawLastEnumValue)
+    {
+        return false;
+    }
+    return true;
+}
