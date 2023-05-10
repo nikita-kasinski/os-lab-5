@@ -76,3 +76,8 @@ std::expected<int, ResultCode> ServerMenu::getOptionCode() const
 
     return result;
 }
+
+ResultCode ServerMenu::initializeOption()
+{
+    return Menu::initializeOption();
+}
