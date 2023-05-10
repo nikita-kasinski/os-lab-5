@@ -8,11 +8,18 @@
 #include "result_codes.h"
 #include "menu/menu.h"
 #include "concurrent_writer.h"
+#include "controller.h"
 
 class ServerMenu : public Menu
 {
 public:
-    ServerMenu(const std::shared_ptr<HANDLE> &pipe, const std::shared_ptr<ConcurrentWriter> &writer);
+    ServerMenu(
+        const std::shared_ptr<HANDLE> &pipe,
+        int threadId, 
+        const std::shared_ptr<Controller> &ctrl,
+        const std::shared_ptr<std::vector<std::size_t>> &recordAccessReadCount,
+        const std::shared_ptr<CRITICAL_SECTION> &iocs,
+        const std::shared_ptr<CRITICAL_SECTION> &acs);
 
     [[nodiscard]] ResultCode start() override;
 
@@ -43,4 +50,8 @@ private:
 
     std::shared_ptr<ConcurrentWriter> _writer;
     std::shared_ptr<HANDLE> _pipe;
+    const int _threadId;
+    std::shared_ptr<Controller> _ctrl;
+    std::shared_ptr<std::vector<std::size_t>> _recordAccessReadCount;
+    std::shared_ptr<CRITICAL_SECTION> _acs;
 };

@@ -3,14 +3,27 @@
 //
 
 #include <memory>
+#include <iostream>
 #include "menu/server_menu.h"
 #include "menu/server_option_modify.h"
 #include "menu/server_option_quit.h"
 #include "menu/server_option_read.h"
 
-ServerMenu::ServerMenu(const std::shared_ptr<HANDLE> &pipe, const std::shared_ptr<ConcurrentWriter> &writer) : 
-    Menu(), _writer(writer), _pipe(pipe)
+ServerMenu::ServerMenu(
+    const std::shared_ptr<HANDLE> &pipe, 
+    int threadId,
+    const std::shared_ptr<Controller> &ctrl,
+    const std::shared_ptr<std::vector<std::size_t>> &recordAccessReadCount,
+    const std::shared_ptr<CRITICAL_SECTION> &iocs,
+    const std::shared_ptr<CRITICAL_SECTION> &acs): 
+    Menu(), 
+    _pipe(pipe), 
+    _threadId(threadId),
+    _ctrl(ctrl), 
+    _recordAccessReadCount(recordAccessReadCount), 
+    _acs(acs)
 {
+    _writer = std::make_shared<ConcurrentWriter>(iocs, std::cout);
 }
 
 ResultCode ServerMenu::start()
