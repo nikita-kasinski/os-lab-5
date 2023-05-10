@@ -8,7 +8,8 @@
 #include "menu/server_option_quit.h"
 #include "menu/server_option_read.h"
 
-ServerMenu::ServerMenu() : Menu()
+ServerMenu::ServerMenu(const std::shared_ptr<HANDLE> &pipe, const std::shared_ptr<ConcurrentWriter> &writer) : 
+    Menu(), _writer(writer), _pipe(pipe)
 {
 }
 
