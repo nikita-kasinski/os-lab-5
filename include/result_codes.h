@@ -18,4 +18,5 @@ enum ResultCode
     PipeWriteInvalidSize,
     PipeReadError,
     PipeWriteError,
+    PipeDisconnectError,
 };
