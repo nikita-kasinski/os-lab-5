@@ -17,7 +17,6 @@ Menu::Menu()
 ResultCode Menu::start()
 {
     bool started = false;
-    // TODO add menu printing here which requires field with stream out
     while (not started or not _option->isQuitOption())
     {
         started = true;
