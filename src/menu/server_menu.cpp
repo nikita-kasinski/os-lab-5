@@ -8,6 +8,7 @@
 #include "menu/server_option_modify.h"
 #include "menu/server_option_quit.h"
 #include "menu/server_option_read.h"
+#include "protocol.h"
 
 ServerMenu::ServerMenu(
     const std::shared_ptr<HANDLE> &pipe, 
@@ -31,14 +32,14 @@ ResultCode ServerMenu::start()
     return Menu::start();
 }
 
-bool ServerMenu::isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const
+bool ServerMenu::isValidOptionCode(std::size_t rawEnumValue, std::size_t rawLastEnumValue) const
 {
     return Menu::isValidOptionCode(rawEnumValue, rawLastEnumValue);
 }
 
-std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ServerMenu::createMenuOption(int rawEnumValue) const
+std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ServerMenu::createMenuOption(std::size_t rawEnumValue) const
 {
-    if (!isValidOptionCode(rawEnumValue, static_cast<int>(ServerMenu::Options::Last)))
+    if (!isValidOptionCode(rawEnumValue, static_cast<std::size_t>(ServerMenu::Options::Last)))
     {
         return std::unexpected(ResultCode::UnrecognizedOption);
     }
@@ -71,13 +72,13 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ServerMenu::createM
     return std::unexpected(ResultCode::UnreachableCodeReached);
 }
 
-std::expected<int, ResultCode> ServerMenu::getOptionCode() const
+std::expected<std::size_t, ResultCode> ServerMenu::getOptionCode() const
 {
     HANDLE pipe = SmartWinapi::unwrap(_pipe);
-    size_t result;
+    std::size_t result;
 
     DWORD bytes;
-    auto readResult = ReadFile(pipe, &result, sizeof(char), &bytes, NULL);
+    auto readResult = ReadFile(pipe, reinterpret_cast<char *>(&result), sizeof(char), &bytes, NULL);
     if (readResult != TRUE)
     {
         return std::unexpected(ResultCode::PipeReadError);
@@ -87,7 +88,7 @@ std::expected<int, ResultCode> ServerMenu::getOptionCode() const
         return std::unexpected(ResultCode::PipeReadInvalidSize);
     }
 
-    return result;
+    return static_cast<std::size_t>(result);
 }
 
 ResultCode ServerMenu::initializeOption()
