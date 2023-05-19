@@ -34,7 +34,7 @@ ResultCode Menu::start()
     return ResultCode::OK;
 }
 
-bool Menu::isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const
+bool Menu::isValidOptionCode(std::size_t rawEnumValue, std::size_t rawLastEnumValue) const
 {
     if (rawEnumValue < 0)
     {
