@@ -25,7 +25,7 @@ ResultCode ClientMenu::initializeOption()
     return Menu::initializeOption();
 }
 
-std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createMenuOption(int rawEnumValue) const
+std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createMenuOption(std::size_t rawEnumValue) const
 {
     if (!isValidOptionCode(rawEnumValue, static_cast<int>(ClientMenu::Options::Last)))
     {
@@ -67,7 +67,7 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createM
     return std::unexpected(ResultCode::UnreachableCodeReached);
 }
 
-bool ClientMenu::isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const
+bool ClientMenu::isValidOptionCode(std::size_t rawEnumValue, std::size_t rawLastEnumValue) const
 {
     return Menu::isValidOptionCode(rawEnumValue, rawLastEnumValue);
 }
@@ -99,7 +99,7 @@ std::string ClientMenu::getMenuPrompt() const
     return menu;
 }
 
-std::expected<int, ResultCode> ClientMenu::getOptionCode() const
+std::expected<size_t, ResultCode> ClientMenu::getOptionCode() const
 {
     return Utility::safeUnsignedIntegerInput(_in, _out, "Enter request: ", "Value must be non negative integer\n");
 }

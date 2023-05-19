@@ -29,11 +29,11 @@ private:
         Last,
     };
 
-    bool isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const override;
+    bool isValidOptionCode(std::size_t rawEnumValue, std::size_t rawLastEnumValue) const override;
 
-    std::expected<int, ResultCode> getOptionCode() const override;
+    std::expected<std::size_t, ResultCode> getOptionCode() const override;
 
-    std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const override;
+    std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(std::size_t rawEnumValue) const override;
 
     [[nodiscard]] ResultCode initializeOption() override;
 
