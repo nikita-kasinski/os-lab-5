@@ -20,11 +20,11 @@ protected:
 
     Menu();
 
-    virtual bool isValidOptionCode(int rawEnumValue, int rawLastEnumValue) const = 0;
+    virtual bool isValidOptionCode(std::size_t rawEnumValue, std::size_t rawLastEnumValue) const = 0;
 
-    virtual std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(int rawEnumValue) const = 0;
+    virtual std::expected<std::unique_ptr<MenuOption>, ResultCode> createMenuOption(std::size_t rawEnumValue) const = 0;
 
-    virtual std::expected<int, ResultCode> getOptionCode() const = 0;
+    virtual std::expected<std::size_t, ResultCode> getOptionCode() const = 0;
 
     [[nodiscard]] virtual ResultCode initializeOption() = 0;
 
