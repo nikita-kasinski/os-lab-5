@@ -103,3 +103,13 @@ std::expected<size_t, ResultCode> ClientMenu::getOptionCode() const
 {
     return Utility::safeUnsignedIntegerInput(_in, _out, "Enter request: ", "Value must be non negative integer\n");
 }
+
+ResultCode ClientMenu::handleInitializationError(ResultCode initializationError) const
+{
+    return Menu::handleInitializationError(initializationError);
+}
+
+ResultCode ClientMenu::handleExecutionError(ResultCode executionError) const
+{
+    return Menu::handleExecutionError(executionError);
+}

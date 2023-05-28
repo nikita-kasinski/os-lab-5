@@ -38,6 +38,10 @@ private:
 
     [[nodiscard]] ResultCode initializeOption() override;
 
+    ResultCode handleInitializationError(ResultCode initializationError) const override;
+    
+    ResultCode handleExecutionError(ResultCode executionError) const override;
+
     std::shared_ptr<HANDLE> getPipe() const;
 
     std::istream &getInStream() const;
