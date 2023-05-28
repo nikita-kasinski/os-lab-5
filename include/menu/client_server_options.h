@@ -1,3 +1,9 @@
+#pragma once
+
+//
+// Created by Nikita Kasinski
+//
+
 enum class ClientServerOptions
 {
     Quit,
