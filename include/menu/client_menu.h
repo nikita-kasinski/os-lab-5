@@ -6,6 +6,7 @@
 #include <iostream>
 #include <windows.h>
 #include "menu.h"
+#include "client_server_options.h"
 
 class ClientMenu : public Menu
 {
@@ -22,10 +23,10 @@ private:
 
     enum class Options
     {
-        Menu,
-        Quit,
-        ReadRecord,
-        ModifyRecord,
+        Quit = static_cast<int>(ClientServerOptions::Quit),
+        ReadRecord = static_cast<int>(ClientServerOptions::Read),
+        ModifyRecord = static_cast<int>(ClientServerOptions::Modify),
+        Menu = static_cast<int>(ClientServerOptions::Last),
         Last,
     };
 

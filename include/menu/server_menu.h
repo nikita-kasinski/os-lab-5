@@ -9,6 +9,7 @@
 #include "menu/menu.h"
 #include "concurrent_writer.h"
 #include "controller.h"
+#include "client_server_options.h"
 
 class ServerMenu : public Menu
 {
@@ -30,9 +31,9 @@ private:
 
     enum class Options
     {   
-        Quit,
-        Read,
-        Modify,
+        Quit = static_cast<int>(ClientServerOptions::Quit),
+        Read = static_cast<int>(ClientServerOptions::Read),
+        Modify = static_cast<int>(ClientServerOptions::Modify),
         Last,
     };
 
