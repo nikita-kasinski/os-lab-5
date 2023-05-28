@@ -47,6 +47,7 @@ public:
     template <class T>
     ResultCode writePipe(const std::shared_ptr<HANDLE> &pipe, const T &message)
     {
+        DWORD bytes;
         auto writeResult = WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<const char*>(&message), sizeof(T), &bytes, NULL);
         if (writeResult != TRUE)
         {
