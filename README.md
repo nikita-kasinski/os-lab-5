@@ -2,6 +2,12 @@
 ## Made by Nikita Kasinski
 ### Overview
 The app comprises two types of processes: one server and several client processes. Client sends request to server in order to get access to binary file with records. Server is processing the requests. Communication is organized via named pipe.
+## Features
+* smart pointers
+* smart pointers with custom deleters to incorporate RAII into winapi
+* std::expected (c++23)
+* unit tests
+* continuous integration
 ### Tools
 * gcc - compiler
 * make - build automation tool
