@@ -3,6 +3,7 @@
 //
 
 #pragma once
+
 #include <cstdlib>
 #include <windows.h>
 #include <memory>

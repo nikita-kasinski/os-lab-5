@@ -7,7 +7,7 @@
 #include "smart_winapi.h"
 #include "employee.h"
 #include "utility.h"
-#include "client_server_options.h"
+#include "menu/client_server_options.h"
 
 ClientMenu::ClientOptionModifyRecord::ClientOptionModifyRecord(const ClientMenu *menu) : MenuOption(menu)
 {
