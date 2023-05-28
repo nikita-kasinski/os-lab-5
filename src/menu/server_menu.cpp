@@ -75,23 +75,33 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ServerMenu::createM
 std::expected<std::size_t, ResultCode> ServerMenu::getOptionCode() const
 {
     HANDLE pipe = SmartWinapi::unwrap(_pipe);
-    std::size_t result;
+    Protocol::PROTOCOL result;
 
     DWORD bytes;
-    auto readResult = ReadFile(pipe, reinterpret_cast<char *>(&result), sizeof(char), &bytes, NULL);
+    auto readResult = ReadFile(pipe, reinterpret_cast<char *>(&result), Protocol::SIZE, &bytes, NULL);
     if (readResult != TRUE)
     {
         return std::unexpected(ResultCode::PipeReadError);
     }
-    if (bytes != sizeof(char))
+    if (bytes != Protocol::SIZE)
     {
         return std::unexpected(ResultCode::PipeReadInvalidSize);
     }
-
-    return static_cast<std::size_t>(result);
+    std::cout << result << "\n";
+    return result;
 }
 
 ResultCode ServerMenu::initializeOption()
 {
     return Menu::initializeOption();
+}
+
+ResultCode ServerMenu::handleInitializationError(ResultCode initializationError) const
+{
+    return Menu::handleInitializationError(initializationError);
+}
+
+ResultCode ServerMenu::handleExecutionError(ResultCode executionError) const
+{
+    return Menu::handleExecutionError(executionError);
 }

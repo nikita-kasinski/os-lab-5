@@ -47,6 +47,10 @@ private:
 
     std::expected<std::size_t, ResultCode> getOptionCode() const override;
 
+    ResultCode handleInitializationError(ResultCode initializationError) const override;
+
+    ResultCode handleExecutionError(ResultCode executionError) const override;
+    
     // fields
 
     std::shared_ptr<ConcurrentWriter> _writer;
