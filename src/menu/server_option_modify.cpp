@@ -14,16 +14,19 @@ ResultCode ServerMenu::ServerOptionModify::execute()
 {
     const ServerMenu *serverMenu = dynamic_cast<const ServerMenu *>(_menu);
     auto pipe = serverMenu->_pipe;
-    HANDLE pipeUnwrapped = SmartWinapi::unwrap(pipe);
     auto ctrl = serverMenu->_ctrl;
     auto threadId = serverMenu->_threadId;
     auto writer = serverMenu->_writer;
 
-    DWORD bytes;
+    ResultCode writeResult, readResult;
 
     // reading key
     int key;
-    ReadFile(pipeUnwrapped, reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
+    readResult = SmartWinapi::readPipe(pipe, key);
+    if (ResultCode::OK != readResult)
+    {
+        return readResult;
+    }
 
     // trying to get recordId by id
     size_t recordId;
@@ -43,7 +46,11 @@ ResultCode ServerMenu::ServerOptionModify::execute()
         writer->write("Thread ", threadId, " access granted\n");
 
         // writing success response
-        WriteFile(pipeUnwrapped, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
+        writeResult = SmartWinapi::writePipe(pipe, Protocol::SUCCESS);
+        if (ResultCode::OK != writeResult)
+        {
+            return writeResult;
+        }
 
         // reading record
         Employee employeeRead;
@@ -51,17 +58,33 @@ ResultCode ServerMenu::ServerOptionModify::execute()
         {
 
             // writing record
-            WriteFile(pipeUnwrapped, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+            writeResult = SmartWinapi::writePipe(pipe, employeeRead);
+            if (ResultCode::OK != writeResult)
+            {
+                return writeResult;
+            }
 
             // reading new record
-            ReadFile(pipeUnwrapped, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+            readResult = SmartWinapi::readPipe(pipe, employeeRead);
+            if (ResultCode::OK != readResult)
+            {
+                return readResult;
+            }
 
             if (ctrl->setRecord(key, employeeRead))
             {
-                WriteFile(pipeUnwrapped, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
+                writeResult = SmartWinapi::writePipe(pipe, Protocol::SUCCESS);
+                if (ResultCode::OK != writeResult)
+                {
+                    return writeResult;
+                }
 
-                char response;
-                ReadFile(pipeUnwrapped, &response, Protocol::SIZE, &bytes, NULL);
+                Protocol::PROTOCOL response;
+                readResult = SmartWinapi::readPipe(pipe, response);
+                if (ResultCode::OK != readResult)
+                {
+                    return readResult;
+                }
 
                 if (Protocol::FINISH != response)
                 {
@@ -71,12 +94,20 @@ ResultCode ServerMenu::ServerOptionModify::execute()
             }
             else
             {
-                WriteFile(pipeUnwrapped, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+                writeResult = SmartWinapi::writePipe(pipe, Protocol::FAILURE);
+                if (ResultCode::OK != writeResult)
+                {
+                    return writeResult;
+                }
             }
         }
         else
         {
-            WriteFile(pipeUnwrapped, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+            writeResult = SmartWinapi::writePipe(pipe, Protocol::FAILURE);
+            if (ResultCode::OK != writeResult)
+            {
+                return writeResult;
+            }
         }
 
         // marking record as not being modified
@@ -85,7 +116,7 @@ ResultCode ServerMenu::ServerOptionModify::execute()
     else
     {
         // writing failure response
-        WriteFile(pipeUnwrapped, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+        writeResult = SmartWinapi::writePipe(pipe, Protocol::FAILURE);
     }
     return ResultCode::OK;
 }
