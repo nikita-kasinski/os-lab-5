@@ -29,7 +29,7 @@ public:
     static std::shared_ptr<HANDLE> make_shared_handle(HANDLE source);
 
     template <class T>
-    ResultCode readPipe(const std::shared_ptr<HANDLE> &pipe, T &result)
+    static ResultCode readPipe(const std::shared_ptr<HANDLE> &pipe, T &result)
     {
         DWORD bytes = 0;
         auto readResult = ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&result), sizeof(T), &bytes, NULL);
@@ -45,7 +45,7 @@ public:
     }
 
     template <class T>
-    ResultCode writePipe(const std::shared_ptr<HANDLE> &pipe, const T &message)
+    static ResultCode writePipe(const std::shared_ptr<HANDLE> &pipe, const T &message)
     {
         DWORD bytes;
         auto writeResult = WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<const char*>(&message), sizeof(T), &bytes, NULL);
