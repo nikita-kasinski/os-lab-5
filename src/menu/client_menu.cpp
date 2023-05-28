@@ -17,6 +17,7 @@ ClientMenu::ClientMenu(const std::shared_ptr<HANDLE> &pipe, std::ostream &out, s
 
 ResultCode ClientMenu::start()
 {
+    std::cout << getMenuPrompt() << "\n";
     return Menu::start();
 }
 
@@ -33,6 +34,7 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ClientMenu::createM
     }
 
     ClientMenu::Options optionCode = static_cast<ClientMenu::Options>(rawEnumValue);
+    std::cout << "Option code: " << rawEnumValue << "\n";
 
     switch (optionCode)
     {
@@ -92,10 +94,10 @@ std::string ClientMenu::getMenuPrompt() const
     // TODO make function dynamic from options enum
     std::string menu =
         "Enter corresponding request: \n"
-        "   0 to see menu\n"
-        "   1 to quit\n"
-        "   2 to read record\n"
-        "   3 to modify record\n";
+        "   0 to quit\n"
+        "   1 to read record\n"
+        "   2 to modify record\n"
+        "   3 to see menu\n";
     return menu;
 }
 

@@ -74,16 +74,16 @@ std::expected<std::unique_ptr<Menu::MenuOption>, ResultCode> ServerMenu::createM
 
 std::expected<std::size_t, ResultCode> ServerMenu::getOptionCode() const
 {
-    Protocol::PROTOCOL result;
+    ClientServerOptions rawOptionCode;
 
-    auto readResult = SmartWinapi::readPipe(_pipe, result);
-    std::cout << result << "\n";
+    auto readResult = SmartWinapi::readPipe(_pipe, rawOptionCode);
+    std::cout << static_cast<std::size_t>(rawOptionCode) << "\n";
     
     if (ResultCode::OK != readResult)
     {
         return readResult;
     }
-    return result;
+    return static_cast<std::size_t>(rawOptionCode);
 }
 
 ResultCode ServerMenu::initializeOption()

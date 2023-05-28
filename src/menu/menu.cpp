@@ -90,7 +90,7 @@ ResultCode Menu::initializeOption()
 
 ResultCode Menu::handleInitializationError(ResultCode initializationError) const
 {
-    std::cout << "Initialize result: " << initializationError << "\n";
+    std::cout << "Initialization result: " << initializationError << "\n";
     return ResultCode::ErrorHandled;
 }
 
