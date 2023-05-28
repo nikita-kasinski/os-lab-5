@@ -7,13 +7,10 @@
 #include <memory>
 #include <vector>
 
+#include "result_codes.h"
+
 class SmartWinapi
 {
-private:
-
-    static CRITICAL_SECTION *createCriticalSection();
-    static HANDLE *createHandle(HANDLE source);
-
 public:
     struct CriticalSectionDeleter
     {
@@ -31,9 +28,44 @@ public:
     static std::shared_ptr<CRITICAL_SECTION> make_shared_cs();
     static std::shared_ptr<HANDLE> make_shared_handle(HANDLE source);
 
+    template <class T>
+    ResultCode readPipe(const std::shared_ptr<HANDLE> &pipe, T &result)
+    {
+        DWORD bytes = 0;
+        auto readResult = ReadFile(SmartWinapi::unwrap(pipe), reinterpret_cast<char *>(&result), sizeof(T), &bytes, NULL);
+        if (readResult != TRUE)
+        {
+            return ResultCode::PipeReadError;
+        }
+        if (bytes != sizeof(T))
+        {
+            return ResultCode::PipeReadInvalidSize;
+        }
+        return ResultCode::OK;
+    }
+
+    template <class T>
+    ResultCode writePipe(const std::shared_ptr<HANDLE> &pipe, const T &message)
+    {
+        auto writeResult = WriteFile(SmartWinapi::unwrap(pipe), reinterpret_cast<const char*>(&message), sizeof(T), &bytes, NULL);
+        if (writeResult != TRUE)
+        {
+            return ResultCode::PipeWriteError;
+        }
+        if (bytes != sizeof(T))
+        {
+            return ResultCode::PipeWriteInvalidSize;
+        }
+        return ResultCode::OK;
+    }
+
     template <typename SmartPtr>
     static std::vector<HANDLE> unwrapSmartPointersHandleArray(const std::vector<SmartPtr> &array);
 
     template <typename SmartPtr>
     static HANDLE unwrap(const SmartPtr &source);
+
+private:
+    static CRITICAL_SECTION *createCriticalSection();
+    static HANDLE *createHandle(HANDLE source);
 };
