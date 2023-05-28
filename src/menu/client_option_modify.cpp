@@ -7,6 +7,7 @@
 #include "smart_winapi.h"
 #include "employee.h"
 #include "utility.h"
+#include "client_server_options.h"
 
 ClientMenu::ClientOptionModifyRecord::ClientOptionModifyRecord(const ClientMenu *menu) : MenuOption(menu)
 {
@@ -17,21 +18,34 @@ ResultCode ClientMenu::ClientOptionModifyRecord::execute()
     auto clientMenu = dynamic_cast<const ClientMenu*>(_menu);
     std::ostream &out = clientMenu->getOutStream();
     std::istream &in = clientMenu->getInStream();
-    auto smartPipe = clientMenu->getPipe();
-    HANDLE unwrappedPipe = SmartWinapi::unwrap(smartPipe);
-    DWORD bytes;
+    auto pipe = clientMenu->getPipe();
 
     int key = -1;
     out << clientMenu->keyPrompt;
     in >> key;
+    
+    ResultCode writeResult, readResult;
 
-    WriteFile(unwrappedPipe, &Protocol::MODIFY, Protocol::SIZE, &bytes, NULL);
-    WriteFile(unwrappedPipe, reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
+    writeResult = SmartWinapi::writePipe(pipe, ClientServerOptions::Modify);
+    if (ResultCode::OK != writeResult)
+    {
+        return writeResult;
+    }
+
+    writeResult = SmartWinapi::writePipe(pipe, key);
+    if (ResultCode::OK != writeResult)
+    {
+        return writeResult;
+    }
 
     out << "Waiting for record to become available for modifying\n";
 
-    char response;
-    ReadFile(unwrappedPipe, &response, Protocol::SIZE, &bytes, NULL);
+    Protocol::PROTOCOL response;
+    readResult = SmartWinapi::readPipe(pipe, response);
+    if (ResultCode::OK != readResult)
+    {
+        return readResult;
+    }
 
     if (Protocol::SUCCESS == response)
     {
@@ -39,7 +53,11 @@ ResultCode ClientMenu::ClientOptionModifyRecord::execute()
 
         // reading old record
         Employee employeeRead;
-        ReadFile(unwrappedPipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+        readResult = SmartWinapi::readPipe(pipe, employeeRead);
+        if (ResultCode::OK != readResult)
+        {
+            return readResult;
+        }
 
         // printing old record
         out << "Old record\n";
@@ -50,11 +68,19 @@ ResultCode ClientMenu::ClientOptionModifyRecord::execute()
         employeeRead = Utility::readEmployee(in, out);
 
         // writing rew record to pipe
-        WriteFile(unwrappedPipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+        writeResult = SmartWinapi::writePipe(pipe, employeeRead);
+        if (ResultCode::OK != writeResult)
+        {
+            return writeResult;
+        }
 
         // reading response
-        char response;
-        ReadFile(unwrappedPipe, &response, Protocol::SIZE, &bytes, NULL);
+        Protocol::PROTOCOL response;
+        readResult = SmartWinapi::readPipe(pipe, response);
+        if (ResultCode::OK != readResult)
+        {
+            return readResult;
+        }
 
         if (Protocol::SUCCESS == response)
         {
@@ -62,7 +88,11 @@ ResultCode ClientMenu::ClientOptionModifyRecord::execute()
             out << "Enter any key to continue\n";
             char x;
             in >> x;
-            WriteFile(unwrappedPipe, &Protocol::FINISH, Protocol::SIZE, &bytes, NULL);
+            writeResult = SmartWinapi::writePipe(pipe, Protocol::FINISH);
+            if (ResultCode::OK != writeResult)
+            {
+                return writeResult;
+            }
         }
         else if (Protocol::FAILURE == response)
         {
