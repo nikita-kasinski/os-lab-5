@@ -28,6 +28,10 @@ protected:
 
     [[nodiscard]] virtual ResultCode initializeOption() = 0;
 
+    virtual ResultCode handleInitializationError(ResultCode initializationError) const = 0;
+
+    virtual ResultCode handleExecutionError(ResultCode executionError) const = 0;
+
     std::unique_ptr<MenuOption> _option;
 };
 
