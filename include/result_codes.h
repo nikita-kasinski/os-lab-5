@@ -19,4 +19,6 @@ enum ResultCode
     PipeReadError,
     PipeWriteError,
     PipeDisconnectError,
+    ErrorHandled,
+    ErrorCannotBeHandled
 };
