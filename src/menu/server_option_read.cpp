@@ -13,18 +13,22 @@ ServerMenu::ServerOptionRead::ServerOptionRead(const Menu *menu) : MenuOption(me
 ResultCode ServerMenu::ServerOptionRead::execute()
 {
     const ServerMenu *serverMenu = dynamic_cast<const ServerMenu *>(_menu);
-    HANDLE unwrappedPipe = SmartWinapi::unwrap(serverMenu->_pipe);
+    auto pipe = serverMenu->_pipe;
     auto writer = serverMenu->_writer;
     auto threadId = serverMenu->_threadId;
     auto ctrl = serverMenu->_ctrl;
     auto recordAccessReadCount = serverMenu->_recordAccessReadCount;
     auto acs = serverMenu->_acs;
 
+    ResultCode readResult, writeResult;
     // reading record
-    DWORD bytes;
 
     int key; // employee id
-    ReadFile(unwrappedPipe, reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
+    readResult = SmartWinapi::readPipe(pipe, key);
+    if (ResultCode::OK != readResult)
+    {
+        return readResult;
+    }
 
     writer->write("Thread ", threadId, " received key to read: ", key, "\n");
 
@@ -55,15 +59,28 @@ ResultCode ServerMenu::ServerOptionRead::execute()
 
             writer->write("Thread ", threadId, " has read employee and has sent it\n");
 
-            WriteFile(unwrappedPipe, &Protocol::SUCCESS, Protocol::SIZE, &bytes, NULL);
-            WriteFile(unwrappedPipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+            writeResult = SmartWinapi::writePipe(pipe, Protocol::SUCCESS);
+            if (ResultCode::OK != writeResult)
+            {
+                return writeResult;
+            }
 
-            char response;
+            writeResult = SmartWinapi::writePipe(pipe, employeeRead);
+            if (ResultCode::OK != writeResult)
+            {
+                return writeResult;
+            }
+
+            Protocol::PROTOCOL response;
 
             // waiting for client to finish access to record
             writer->write("Thread ", threadId, " is waiting for client to stop reading record\n");
 
-            ReadFile(unwrappedPipe, &response, Protocol::SIZE, &bytes, NULL);
+            readResult = SmartWinapi::readPipe(pipe, response);
+            if (ResultCode::OK != readResult)
+            {
+                return readResult;
+            }
 
             if (Protocol::FINISH != response)
             {
@@ -75,7 +92,11 @@ ResultCode ServerMenu::ServerOptionRead::execute()
         }
         else
         {
-            WriteFile(unwrappedPipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+            writeResult = SmartWinapi::writePipe(pipe, Protocol::FAILURE);
+            if (ResultCode::OK != writeResult)
+            {
+                return writeResult;
+            }
         }
 
         EnterCriticalSection(acs.get());
@@ -89,7 +110,11 @@ ResultCode ServerMenu::ServerOptionRead::execute()
     }
     else
     {
-        WriteFile(unwrappedPipe, &Protocol::FAILURE, Protocol::SIZE, &bytes, NULL);
+        writeResult = SmartWinapi::writePipe(pipe, Protocol::FAILURE);
+        if (ResultCode::OK != writeResult)
+        {
+            return writeResult;
+        }
     }
     return ResultCode::OK;
 }
