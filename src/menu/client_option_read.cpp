@@ -17,21 +17,34 @@ ResultCode ClientMenu::ClientOptionReadRecord::execute()
     auto clientMenu = dynamic_cast<const ClientMenu *>(_menu);
     std::ostream &out = clientMenu->getOutStream();
     std::istream &in = clientMenu->getInStream();
-    auto smartPipe = clientMenu->getPipe();
-    HANDLE unwrappedPipe = SmartWinapi::unwrap(smartPipe);
-    DWORD bytes;
+    auto pipe = clientMenu->getPipe();
 
     int key = -1;
     out << clientMenu->keyPrompt;
     in >> key;
 
-    WriteFile(unwrappedPipe, &Protocol::READ, Protocol::SIZE, &bytes, NULL);
-    WriteFile(unwrappedPipe, reinterpret_cast<char *>(&key), sizeof(int), &bytes, NULL);
+    ResultCode writeResult, readResult;
+
+    writeResult = SmartWinapi::writePipe(pipe, ClientServerOptions::Read);
+    if (ResultCode::OK != writeResult)
+    {
+        return writeResult;
+    }
+
+    writeResult = SmartWinapi::writePipe(pipe, key);
+    if (ResultCode::OK != writeResult)
+    {
+        return writeResult;
+    }
 
     out << "Waiting for record to become available for reading\n";
 
-    char response;
-    ReadFile(unwrappedPipe, &response, Protocol::SIZE, &bytes, NULL);
+    Protocol::PROTOCOL response;
+    readResult = SmartWinapi::readPipe(pipe, response);
+    if (ResultCode::OK != readResult)
+    {
+        return readResult;
+    }
 
     if (Protocol::FAILURE == response)
     {
@@ -43,13 +56,22 @@ ResultCode ClientMenu::ClientOptionReadRecord::execute()
         out << "Access granted\n";
 
         Employee employeeRead;
-        ReadFile(unwrappedPipe, reinterpret_cast<char *>(&employeeRead), sizeof(Employee), &bytes, NULL);
+        readResult = SmartWinapi::readPipe(pipe, employeeRead);
+        if (ResultCode::OK != readResult)
+        {
+            return readResult;
+        }
+
         out << "Employee received\n";
         Utility::printEmployee(out, employeeRead);
         out << "Enter any key to continue\n";
         char x;
         in >> x;
-        WriteFile(unwrappedPipe, &Protocol::FINISH, Protocol::SIZE, &bytes, NULL);
+        writeResult = SmartWinapi::writePipe(pipe, Protocol::FINISH);
+        if (ResultCode::OK != writeResult)
+        {
+            return writeResult;
+        }
     }
     else
     {
