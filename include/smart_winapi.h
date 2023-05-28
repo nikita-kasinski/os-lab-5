@@ -23,8 +23,14 @@ public:
         void operator()(HANDLE *handle) const;
     };
 
+    struct MutexGuard
+    {
+        void operator()(HANDLE *handle) const;
+    };
+
     static std::unique_ptr<CRITICAL_SECTION, CriticalSectionDeleter> make_unique_cs();
     static std::unique_ptr<HANDLE, HandleCloser> make_unique_handle(HANDLE source);
+    static std::unique_ptr<HANDLE, MutexGuard> make_unique_mutex(HANDLE mutex);
 
     static std::shared_ptr<CRITICAL_SECTION> make_shared_cs();
     static std::shared_ptr<HANDLE> make_shared_handle(HANDLE source);

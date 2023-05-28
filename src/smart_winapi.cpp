@@ -19,6 +19,13 @@ void SmartWinapi::HandleCloser::operator()(HANDLE *handle) const
     delete handle;
 }
 
+void SmartWinapi::MutexGuard::operator()(HANDLE *handle) const
+{
+    ReleaseMutex(handle);
+    std::cout << "Mutex released via Mutex Guard\n";
+    delete handle;
+}
+
 CRITICAL_SECTION* SmartWinapi::createCriticalSection()
 {
     CRITICAL_SECTION *csPointer = new CRITICAL_SECTION;
@@ -31,7 +38,7 @@ HANDLE *SmartWinapi::createHandle(HANDLE source)
 {
     HANDLE *handlePointer = new HANDLE;
     *handlePointer = source;
-    std::cout << "Smart handler was created\n";
+    std::cout << "Smart handle was created\n";
     return handlePointer;
 }
 
@@ -42,8 +49,12 @@ std::unique_ptr<CRITICAL_SECTION, SmartWinapi::CriticalSectionDeleter> SmartWina
 
 std::unique_ptr<HANDLE, SmartWinapi::HandleCloser> SmartWinapi::make_unique_handle(HANDLE source)
 {
-    
     return std::unique_ptr<HANDLE, HandleCloser>(createHandle(source), HandleCloser());
+}
+
+std::unique_ptr<HANDLE, SmartWinapi::MutexGuard> SmartWinapi::make_unique_mutex(HANDLE mutex)
+{
+    return std::unique_ptr<HANDLE, MutexGuard>(createHandle(mutex), MutexGuard());
 }
 
 std::shared_ptr<CRITICAL_SECTION> SmartWinapi::make_shared_cs()
