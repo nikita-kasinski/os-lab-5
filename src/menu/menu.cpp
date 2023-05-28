@@ -4,6 +4,7 @@
 
 #include "menu/menu.h"
 #include "result_codes.h"
+#include <iostream>
 
 Menu::MenuOption::MenuOption(const Menu *menu) : _menu(menu)
 {
@@ -22,24 +23,30 @@ ResultCode Menu::start()
         started = true;
 
         ResultCode initializeResult = initializeOption();
-        /*if (ResultCode::OK != initializeResult)
-            return initializeResult;
-        */
+        if (ResultCode::OK != initializeResult)
+        {
+            ResultCode handleResult = handleInitializationError(initializeResult);
+            if (ResultCode::ErrorHandled != handleResult)
+            {
+                return initializeResult;
+            }
+        }
 
         ResultCode executeResult = _option->execute();
-        /*if (ResultCode::OK != executeResult)
-            return executeResult;
-        */
+        if (ResultCode::OK != executeResult)
+        {
+            ResultCode handleResult = handleExecutionError(executeResult);
+            if (ResultCode::ErrorHandled != handleResult)
+            {
+                return executeResult;
+            }
+        }
     }
     return ResultCode::OK;
 }
 
 bool Menu::isValidOptionCode(std::size_t rawEnumValue, std::size_t rawLastEnumValue) const
 {
-    if (rawEnumValue < 0)
-    {
-        return false;
-    }
     if (rawEnumValue >= rawLastEnumValue)
     {
         return false;
@@ -79,4 +86,16 @@ ResultCode Menu::initializeOption()
         return expected_optionCode.error();
     }
     return ResultCode::OK;
+}
+
+ResultCode Menu::handleInitializationError(ResultCode initializationError) const
+{
+    std::cout << "Initialize result: " << initializationError << "\n";
+    return ResultCode::ErrorHandled;
+}
+
+ResultCode Menu::handleExecutionError(ResultCode executionError) const
+{
+    std::cout << "Execution result: " << executionError << "\n";
+    return ResultCode::ErrorHandled;
 }
